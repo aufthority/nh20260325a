@@ -858,16 +858,20 @@ const HABITS = {
       {
         label: 'Sleep Duration (7–9 hrs)',
         weight: 3, foundational: true, type: 'foundational',
-        flex: { label: 'Restful <7 hrs (Flex)', weight: 2 },
+        flex: { label: 'Restful sleep — under 6 hrs (Flex)', weight: 2 },
         info: { body: 'A full night of uninterrupted sleep lasting 7 to 9 hours, waking feeling genuinely rested.', examples: ['In bed by 10:30pm, up at 6:30am', 'No phone after 10pm + dark room + fan/white noise', 'Napping is not a substitute — night sleep is what counts'] },
         tooltip: { icon: '😴', title: 'Sleep is the master regulator', body: 'During deep sleep, tryptophan converts to serotonin and melatonin. Chronic sleep deprivation depletes serotonin reserves faster than anything else.' }
       },
       {
-        label: '5-a-Day (3 Veg + 2 Fruit)',
+        label: '5-a-Day (Veg & Fruit)',
         weight: 3, foundational: true, type: 'foundational',
-        flex: { label: '5-a-Day Partial (Flex)', weight: 1 },
-        info: { body: 'Eating at least 3 servings of vegetables and 2 servings of fruit throughout the day — whole food, not juice.', examples: ['Salad + stir-fry veg + side of fruit at lunch', 'Spinach at breakfast, broccoli at lunch, banana + berries as snacks', 'A smoothie counts only if it uses whole blended fruit/veg'] },
-        tooltip: { icon: '🥦', title: 'Gut-brain axis & Serotonin', body: '95% of serotonin is produced in the gut. Fibre-rich vegetables feed gut bacteria that synthesise serotonin precursors.' }
+        flex: { multiSession: true, tiers: [
+          { label: '1 cup-sized fibre serving',      weight: 1, sessions: 1 },
+          { label: '2 cup-sized fibre servings',     weight: 2, sessions: 2 },
+          { label: '3+ cup-sized fibre servings ✓',  weight: 3, sessions: 3 },
+        ]},
+        info: { body: 'A "cup-sized serving" is roughly one cupped hand of vegetables or fruit — the standard portion measure used in nutrition. Use the cycler to track how many whole-food plant servings you consumed today. Juice does not count; whole or cooked food only.', examples: ['1 cup = ⭐ — e.g. a handful of spinach or one banana', '2 cups = ⭐⭐ — e.g. salad + an apple', '3+ cups = ⭐⭐⭐ — e.g. veg at lunch + fruit snack + veg at dinner (goal: 3 veg + 2 fruit)'] },
+        tooltip: { icon: '🥦', title: 'Gut-brain axis & Serotonin', body: '95% of serotonin is produced in the gut. Fibre-rich vegetables and fruit feed beneficial gut bacteria that synthesise serotonin precursors — making plant diversity one of the strongest long-term mood regulators.' }
       },
       {
         label: 'Nature Walk / Vitamin D (20+ min)',
@@ -951,7 +955,7 @@ const HABITS = {
       {
         label: 'Exercise / High Movement (30+ min)',
         weight: 3, foundational: true, type: 'foundational',
-        flex: { label: 'Micro-movement Session (Flex)', weight: 1 },
+        flex: { label: 'Low Movement — 10+ min (Flex)', weight: 1 },
         info: { body: 'Sustained moderate-to-high intensity physical activity lasting at least 30 minutes — enough to raise heart rate and induce some breathlessness.', examples: ['Running, cycling, or swimming for 30+ min', 'HIIT session, CrossFit, or gym weights', 'Brisk walking uphill or a martial arts class'] },
         tooltip: { icon: '🏃', title: 'Exercise is the endorphin king', body: 'Sustained exercise triggers the largest natural endorphin release. The "runner\'s high" is a real neurochemical event that also reduces cortisol and inflammation.' }
       },
@@ -1100,9 +1104,10 @@ function renderSection(type) {
     const typeMap  = { foundational: 'Foundational', secondary: 'Secondary', bonus: 'Bonus' };
     const stars    = '⭐'.repeat(Math.max(1, Math.min(3, w)));
 
-    // For multi-session: derive display label from active tier
+    // Derive display label — swap when flex is active
     let displayLabel = h.label;
     if (isMulti && tierIdx > 0) displayLabel = h.flex.tiers[tierIdx - 1].label;
+    else if (!isMulti && isFlex && h.flex?.label) displayLabel = h.flex.label;
 
     // Multi-session flex button label
     let flexBtnLabel = '';
