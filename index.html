@@ -845,10 +845,14 @@ const HABITS = {
     gate: 'any',
     habits: [
       {
-        label: 'Solat 5 Waktu / Daily Prayer',  /* REVISION 2 */
+        label: 'Solat 5 Waktu / Daily Prayer',
         weight: 3, foundational: true, type: 'foundational',
-        flex: null,
-        info: { body: 'Completing all five obligatory prayers (or your own structured daily prayer practice) on time throughout the day.', examples: ['Solat Fajr, Dhuhr, Asar, Maghrib, Isyak', 'Morning, midday, afternoon, evening, and night prayer', 'Any structured devotional prayer practice done 5 times'] },
+        flex: { multiSession: true, tiers: [
+          { label: 'Prayer — 1 session',     weight: 1, sessions: 1 },
+          { label: 'Prayer — 3 sessions',    weight: 2, sessions: 3 },
+          { label: 'Prayer — 5 sessions ✓',  weight: 3, sessions: 5 },
+        ]},
+        info: { body: 'Track each prayer or structured devotional session individually. Use the session cycler to record how many you completed — 5 sessions represents completing all obligatory prayers on time.', examples: ['1 session = ⭐ — at least one prayer completed', '3 sessions = ⭐⭐ — Fajr, Dhuhr, Asar done', '5 sessions = ⭐⭐⭐ — all 5 on time (Fajr, Dhuhr, Asar, Maghrib, Isyak)'] },
         tooltip: { icon: '🕌', title: 'Prayer stabilises Serotonin', body: 'Structured prayer combines breathwork, body movement, rhythmic repetition, and gratitude — all independently proven to upregulate serotonin and support circadian rhythm.' }
       },
       {
@@ -872,11 +876,15 @@ const HABITS = {
         tooltip: { icon: '🌿', title: 'Nature walks boost Serotonin', body: 'Outdoor walking combines three powerful serotonin activators: sunlight, rhythmic movement, and exposure to natural environments.' }
       },
       {
-        label: '3 Protein-Rich Meals',
+        label: 'Protein-Rich Meals',
         weight: 2, foundational: false, type: 'secondary',
-        flex: { label: '≤2 Protein Meals (Flex)', weight: 1 },
-        info: { body: 'Three separate meals across the day that each contain a meaningful protein source — not just protein snacks.', examples: ['Eggs at breakfast, chicken at lunch, fish at dinner', 'Greek yoghurt + tofu + beef / legumes across 3 meals', 'Each meal should have at least 20g of protein'] },
-        tooltip: { icon: '🥩', title: 'Protein provides tryptophan', body: 'Serotonin is synthesised from tryptophan — an amino acid found only in protein. Without it, your brain lacks the raw material to make serotonin.' }
+        flex: { multiSession: true, tiers: [
+          { label: '1 palm-sized protein',       weight: 1, sessions: 1 },
+          { label: '2 palm-sized proteins',       weight: 2, sessions: 2 },
+          { label: '3+ palm-sized proteins ✓',   weight: 3, sessions: 3 },
+        ]},
+        info: { body: 'A "palm-sized protein" is a portion of protein roughly the size and thickness of your palm — the practical measure used in precision nutrition. Use the session cycler to track how many palm-sized servings you consumed across the day.', examples: ['1 palm = ⭐ — e.g. one chicken breast at lunch', '2 palms = ⭐⭐ — e.g. eggs at breakfast + fish at dinner', '3+ palms = ⭐⭐⭐ — protein at every main meal (e.g. eggs + chicken + beef/fish)'] },
+        tooltip: { icon: '🥩', title: 'Protein provides tryptophan', body: 'Serotonin is synthesised from tryptophan — an amino acid found only in protein. Without adequate dietary protein, your brain literally lacks the raw material to produce serotonin.' }
       },
       {
         label: 'Gratitude / Muhasabah',
