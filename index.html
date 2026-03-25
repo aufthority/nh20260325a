@@ -144,6 +144,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', system-u
 .nav-tab[data-tab="serotonin"] { --tc: var(--serotonin); }
 .nav-tab[data-tab="oxytocin"]  { --tc: var(--oxytocin); }
 .nav-tab[data-tab="endorphin"] { --tc: var(--endorphin); }
+.nav-tab[data-tab="profile"]   { --tc: var(--muted); }
 .nav-tab.active .tab-icon  { transform: translateY(-2px) scale(1.1); }
 .nav-tab.active .tab-label { color: var(--tc); font-weight: 600; }
 .nav-tab.active .tab-pip   { background: var(--tc); }
@@ -437,6 +438,257 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', system-u
 .install-btn { padding: 8px 13px; border-radius: 8px; background: var(--coach); border: none; color: var(--text); font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 .install-dismiss { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; }
 
+/* ═══ PROFILE PAGE ═══════════════════════════════════════════ */
+.profile-page-inner { padding: 20px 18px 40px; }
+
+/* Avatar block */
+.profile-avatar-block {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  margin-bottom: 10px;
+}
+.profile-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--coach), var(--dopamine));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; flex-shrink: 0; color: #fff;
+  font-family: 'Instrument Serif', serif; font-weight: 400;
+}
+.profile-name { font-family: 'Instrument Serif', serif; font-size: 20px; font-weight: 400; line-height: 1.1; }
+.profile-email { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.profile-badge {
+  margin-left: auto; flex-shrink: 0;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.5px;
+  padding: 4px 10px; border-radius: 20px;
+  background: color-mix(in srgb, var(--coach) 12%, var(--surface2));
+  border: 1px solid color-mix(in srgb, var(--coach) 28%, transparent);
+  color: var(--coach); text-transform: uppercase;
+}
+
+/* Section header */
+.profile-section-label {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); font-weight: 500;
+  margin: 20px 0 8px;
+}
+
+/* Settings rows */
+.profile-rows {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden;
+}
+.profile-row {
+  display: flex; align-items: center; gap: 13px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+  text-decoration: none; color: inherit;
+}
+.profile-row:last-child { border-bottom: none; }
+.profile-row:hover { background: var(--surface2); }
+.profile-row:active { background: var(--surface3); }
+.profile-row-icon {
+  width: 32px; height: 32px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0;
+  background: var(--surface2);
+}
+.profile-row-body { flex: 1; min-width: 0; }
+.profile-row-body strong { display: block; font-size: 14px; font-weight: 500; line-height: 1.2; }
+.profile-row-body span { font-size: 12px; color: var(--muted); }
+.profile-row-chevron { color: var(--muted); flex-shrink: 0; }
+.profile-row.danger strong { color: #c0445a; }
+.profile-row.danger .profile-row-icon { background: color-mix(in srgb, #c0445a 10%, var(--surface2)); }
+
+/* Premium card */
+.premium-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  margin-top: 10px; position: relative; overflow: hidden;
+}
+.premium-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--dopamine), var(--coach), var(--serotonin));
+}
+.premium-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+.premium-card-title { font-family: 'Instrument Serif', serif; font-size: 18px; font-weight: 400; }
+.premium-card-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+  background: linear-gradient(135deg, var(--dopamine), var(--coach));
+  color: #fff; flex-shrink: 0;
+}
+.premium-card p { font-size: 12.5px; color: var(--muted); line-height: 1.55; margin-bottom: 14px; }
+.premium-features { display: flex; flex-direction: column; gap: 5px; margin-bottom: 16px; }
+.premium-feature { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+.premium-feature::before { content: '✓'; color: var(--serotonin); font-weight: 700; font-size: 13px; flex-shrink: 0; }
+.premium-cta {
+  width: 100%; padding: 13px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, var(--dopamine), var(--coach));
+  border: none; color: #fff; font-family: 'Geist', sans-serif;
+  font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.premium-cta:hover { opacity: 0.88; }
+.premium-cta:active { transform: scale(0.97); }
+
+/* Stats strip */
+.profile-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 10px;
+}
+.profile-stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); padding: 12px;
+  text-align: center;
+}
+.profile-stat-val {
+  font-family: 'Instrument Serif', serif; font-size: 24px;
+  font-weight: 400; line-height: 1; color: var(--text);
+}
+.profile-stat-lbl { font-size: 10px; color: var(--muted); margin-top: 3px; letter-spacing: 0.3px; }
+
+/* App info footer */
+.profile-app-footer {
+  text-align: center; padding: 20px 0 0;
+  font-size: 11px; color: var(--muted); line-height: 1.8;
+}
+
+/* ═══ PREMIUM FEATURES — BETA MODE ══════════════════════════ */
+.premium-preview-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.premium-preview-block::before {
+  content: '';
+  display: block; height: 2px; margin: -16px -16px 14px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: linear-gradient(90deg, var(--dopamine), var(--coach), var(--serotonin));
+}
+.premium-preview-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.premium-preview-title { font-size: 14px; font-weight: 600; color: var(--text); }
+.beta-tag {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 20px;
+  background: color-mix(in srgb, var(--serotonin) 12%, var(--surface2));
+  border: 1px solid color-mix(in srgb, var(--serotonin) 30%, transparent);
+  color: var(--serotonin); flex-shrink: 0;
+}
+.premium-preview-desc { font-size: 12px; color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+.beta-feedback-btn {
+  width: 100%; padding: 10px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--muted); font-family: 'Geist', sans-serif;
+  font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s;
+}
+.beta-feedback-btn:hover { color: var(--text); border-color: var(--border2); }
+
+/* ── Live weekly trend chart ── */
+.premium-chart-live {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 14px 8px;
+  margin-bottom: 10px;
+}
+.live-chart-bars {
+  display: flex; align-items: flex-end; gap: 6px;
+  height: 72px; margin-bottom: 6px;
+}
+.live-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.live-bar {
+  width: 100%; border-radius: 3px 3px 0 0;
+  min-height: 4px;
+  transition: height 0.4s cubic-bezier(.4,0,.2,1);
+}
+.live-bar-score { font-size: 9px; color: var(--muted); }
+.live-chart-labels { display: flex; gap: 6px; }
+.live-chart-labels span { flex: 1; text-align: center; font-size: 9px; color: var(--muted); }
+.live-bar.today-bar { outline: 1px solid rgba(255,255,255,0.2); outline-offset: 1px; }
+
+/* ── Live category streaks ── */
+.premium-cat-streaks {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.live-streak-row { display: flex; align-items: center; gap: 10px; }
+.live-streak-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.live-streak-name { font-size: 13px; color: var(--text); flex: 1; }
+.live-streak-count {
+  font-family: 'Instrument Serif', serif; font-size: 20px;
+  line-height: 1; font-weight: 400;
+}
+.live-streak-label { font-size: 10px; color: var(--muted); margin-left: 3px; }
+.live-streak-dots { display: flex; gap: 3px; margin-top: 3px; }
+.live-streak-pip { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ── Live milestones ── */
+.premium-milestones-live {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.live-milestone { display: flex; align-items: center; gap: 12px; }
+.live-milestone-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.live-milestone-body { flex: 1; }
+.live-milestone-body strong { display: block; font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.2; }
+.live-milestone-body span  { font-size: 11px; color: var(--muted); }
+.live-milestone-val {
+  font-family: 'Instrument Serif', serif; font-size: 20px;
+  color: var(--text); font-weight: 400;
+}
+
+/* ── Radar chart ── */
+.premium-radar-wrap {
+  display: flex; align-items: center; justify-content: center;
+  gap: 16px; flex-wrap: wrap;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 10px;
+}
+.radar-legend { display: flex; flex-direction: column; gap: 6px; }
+.radar-legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--muted); }
+.radar-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── Advanced insights ── */
+.premium-adv-insights {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  display: flex; flex-direction: column; gap: 9px;
+}
+.adv-insight-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12.5px; color: var(--text); line-height: 1.5;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border);
+}
+.adv-insight-row:last-child { border-bottom: none; padding-bottom: 0; }
+.adv-insight-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
 /* ═══ RESPONSIVE ═════════════════════════════════════════════ */
 @media (min-width: 520px) {
   .habit-list, .pips-row { padding-left: 20px; padding-right: 20px; }
@@ -541,6 +793,67 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', system-u
           <div class="week-grid" id="weekGrid"></div>
         </div>
         <button class="new-day-btn" onclick="confirmNewDay()">🌅 New Day — Reset Today</button>
+
+        <!-- ── PREMIUM FEATURES — BETA (unlocked for testing) ── -->
+
+        <!-- 1. Weekly trend chart — real data from weekData -->
+        <div class="premium-preview-block">
+          <div class="premium-preview-header">
+            <span class="premium-preview-title">📈 Weekly Score Trend</span>
+            <span class="beta-tag">🧪 Beta</span>
+          </div>
+          <div class="premium-chart-live" id="weeklyTrendChart"></div>
+          <p class="premium-preview-desc">Your Hero Score across this week. Spot patterns, protect your streak, and understand what a strong day looks like for your brain.</p>
+          <button class="beta-feedback-btn" onclick="alert('Thanks for testing! Share feedback: what would make this chart more useful?')">💬 Give Feedback</button>
+        </div>
+
+        <!-- 2. Per-category streaks — live computed -->
+        <div class="premium-preview-block">
+          <div class="premium-preview-header">
+            <span class="premium-preview-title">🔥 Category Streaks</span>
+            <span class="beta-tag">🧪 Beta</span>
+          </div>
+          <div class="premium-cat-streaks" id="catStreaksPanel"></div>
+          <p class="premium-preview-desc">Consecutive days you hit each neurochemical category (≥50% score). See where you're consistent and where you need more focus.</p>
+          <button class="beta-feedback-btn" onclick="alert('Thanks for testing! Share feedback: what streak milestone would motivate you most?')">💬 Give Feedback</button>
+        </div>
+
+        <!-- 3. Personal bests & milestones — live computed -->
+        <div class="premium-preview-block">
+          <div class="premium-preview-header">
+            <span class="premium-preview-title">🏅 Personal Bests</span>
+            <span class="beta-tag">🧪 Beta</span>
+          </div>
+          <div class="premium-milestones-live" id="milestonesPanel"></div>
+          <p class="premium-preview-desc">Your best recorded moments — tracked automatically as you use the app each day.</p>
+          <button class="beta-feedback-btn" onclick="alert('Thanks for testing! Share feedback: which milestone badge would you most want to earn?')">💬 Give Feedback</button>
+        </div>
+
+        <!-- 4. Brain Balance Radar — live SVG -->
+        <div class="premium-preview-block">
+          <div class="premium-preview-header">
+            <span class="premium-preview-title">🕸 Brain Balance Radar</span>
+            <span class="beta-tag">🧪 Beta</span>
+          </div>
+          <div class="premium-radar-wrap">
+            <svg id="radarChart" viewBox="0 0 220 200" width="220" height="200"></svg>
+            <div class="radar-legend" id="radarLegend"></div>
+          </div>
+          <p class="premium-preview-desc">Today's neurochemical shape at a glance. A balanced brain shows an even polygon — lopsided shapes reveal which systems need attention.</p>
+          <button class="beta-feedback-btn" onclick="alert('Thanks for testing! Share feedback: is the radar chart easy to read and interpret?')">💬 Give Feedback</button>
+        </div>
+
+        <!-- 5. Advanced NeuroCoach — live generated insights -->
+        <div class="premium-preview-block">
+          <div class="premium-preview-header">
+            <span class="premium-preview-title">🧠 Advanced NeuroCoach</span>
+            <span class="beta-tag">🧪 Beta</span>
+          </div>
+          <div class="premium-adv-insights" id="advInsightsPanel"></div>
+          <p class="premium-preview-desc">Pattern analysis, habit correlations, and proactive nudges based on your actual data — not generic advice.</p>
+          <button class="beta-feedback-btn" onclick="alert('Thanks for testing! Share feedback: which insight type was most useful or surprising?')">💬 Give Feedback</button>
+        </div>
+
       </div>
     </div>
 
@@ -668,6 +981,126 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', system-u
       <div class="habit-list" id="list-endorphin"></div>
     </div>
 
+    <!-- PROFILE / ACCOUNT PAGE -->
+    <div class="page" id="page-profile">
+      <div class="profile-page-inner">
+
+        <!-- Avatar + name -->
+        <div class="profile-avatar-block">
+          <div class="profile-avatar" id="profileAvatar">?</div>
+          <div>
+            <div class="profile-name" id="profileName">Guest</div>
+            <div class="profile-email" id="profileEmail">Not signed in</div>
+          </div>
+          <div class="profile-badge" id="profilePlanBadge">Free</div>
+        </div>
+
+        <!-- Today's snapshot stats -->
+        <div class="profile-stats">
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="statHeroScore">0%</div>
+            <div class="profile-stat-lbl">Today's Score</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="statStreak">0</div>
+            <div class="profile-stat-lbl">Day Streak</div>
+          </div>
+          <div class="profile-stat">
+            <div class="profile-stat-val" id="statGrade">—</div>
+            <div class="profile-stat-lbl">Today's Grade</div>
+          </div>
+        </div>
+
+        <!-- Premium card -->
+        <div class="premium-card">
+          <div class="premium-card-top">
+            <div class="premium-card-title">NeuroHabit Premium</div>
+            <div class="premium-card-tag">Coming Soon</div>
+          </div>
+          <p>Unlock the full picture of your neurochemical performance — trends, history, and personalised coaching.</p>
+          <div class="premium-features">
+            <div class="premium-feature">Weekly & monthly score trend charts</div>
+            <div class="premium-feature">Per-category habit completion streaks</div>
+            <div class="premium-feature">Personal bests & milestone badges</div>
+            <div class="premium-feature">All 4 categories overview at a glance</div>
+            <div class="premium-feature">Advanced NeuroCoach insights</div>
+          </div>
+          <button class="premium-cta" onclick="alert('Premium is coming soon. Stay tuned!')">Get Early Access</button>
+        </div>
+
+        <!-- Account section -->
+        <div class="profile-section-label">Account</div>
+        <div class="profile-rows">
+          <div class="profile-row" onclick="editProfile()">
+            <div class="profile-row-icon">✏️</div>
+            <div class="profile-row-body">
+              <strong>Edit Display Name</strong>
+              <span>Change how your name appears in the app</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="profile-row" onclick="changePassword()">
+            <div class="profile-row-icon">🔑</div>
+            <div class="profile-row-body">
+              <strong>Change Password</strong>
+              <span>Update your account password</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+        <!-- App section -->
+        <div class="profile-section-label">App</div>
+        <div class="profile-rows">
+          <div class="profile-row" onclick="showScreen('screen-grade')">
+            <div class="profile-row-icon">📊</div>
+            <div class="profile-row-body">
+              <strong>How You're Graded</strong>
+              <span>Scoring rules, grade tiers & flex mode</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="profile-row" onclick="openShareModal()">
+            <div class="profile-row-icon">⬆️</div>
+            <div class="profile-row-body">
+              <strong>Share Today's Score</strong>
+              <span>Share your hero score as an image or text</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+          <div class="profile-row" onclick="confirmNewDay()">
+            <div class="profile-row-icon">🌅</div>
+            <div class="profile-row-body">
+              <strong>New Day — Reset Today</strong>
+              <span>Clear all of today's habits and commits</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+        <!-- Danger section -->
+        <div class="profile-section-label">Session</div>
+        <div class="profile-rows">
+          <div class="profile-row danger" onclick="handleSignOut()">
+            <div class="profile-row-icon">🚪</div>
+            <div class="profile-row-body">
+              <strong>Sign Out</strong>
+              <span>You will be returned to the login screen</span>
+            </div>
+            <svg class="profile-row-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </div>
+        </div>
+
+        <!-- App info -->
+        <div class="profile-app-footer">
+          <div>NeuroHabit</div>
+          <div>By The Aufthority</div>
+          <div style="margin-top:4px;font-size:10px">Version 1.0 · neurohabit.app</div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -713,6 +1146,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Geist', system-u
     <button class="nav-tab" data-tab="serotonin"><span class="tab-icon">🌸</span><span class="tab-label">Serotonin</span><span class="tab-pip"></span></button>
     <button class="nav-tab" data-tab="oxytocin"><span class="tab-icon">🤝</span><span class="tab-label">Oxytocin</span><span class="tab-pip"></span></button>
     <button class="nav-tab" data-tab="endorphin"><span class="tab-icon">🏃</span><span class="tab-label">Endorphin</span><span class="tab-pip"></span></button>
+    <button class="nav-tab" data-tab="profile"><span class="tab-icon">👤</span><span class="tab-label">Profile</span><span class="tab-pip"></span></button>
   </div>
 </nav>
 
@@ -1519,11 +1953,320 @@ function renderCoach() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const name = userData.name ? `, ${userData.name.split(' ')[0]}` : '';
   document.getElementById('coachGreeting').textContent = `${greeting}${name} 🧠`;
+
+  // Render all beta premium panels
+  renderWeeklyTrend();
+  renderCatStreaks();
+  renderMilestones();
+  renderRadar();
+  renderAdvInsights();
 }
 
 /* ═══════════════════════════════════════════════════════════
-   REVISION 6: SHARE SCORE + BRAIN BALANCE
+   BETA PREMIUM PANELS — live data renderers
    ═══════════════════════════════════════════════════════════ */
+
+/* 1. Weekly trend bar chart using real weekData */
+function renderWeeklyTrend() {
+  const el = document.getElementById('weeklyTrendChart');
+  if (!el) return;
+  const now    = new Date();
+  const dow    = now.getDay();
+  const monOff = dow === 0 ? -6 : 1 - dow;
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const COLORS  = ['#c8712a','#4a9e82','#b85070','#5a82c0','#7c6ab8','#c8712a','#4a9e82'];
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d   = new Date(now); d.setDate(now.getDate() + monOff + i);
+    const key = d.toISOString().slice(0, 10);
+    const isToday  = key === today;
+    const isFuture = key > today;
+    const score = isToday ? Math.round(heroScore()) : (weekData[key] ?? 0);
+    return { label: labels[i], score, isFuture, isToday };
+  });
+
+  const maxScore = Math.max(...days.map(d => d.score), 1);
+
+  el.innerHTML = `
+    <div class="live-chart-bars">
+      ${days.map((d, i) => {
+        const h = d.isFuture ? 4 : Math.max(4, (d.score / 100) * 72);
+        const color = d.isFuture ? 'var(--border2)' : COLORS[i];
+        const opacity = d.isFuture ? 0.3 : 0.85;
+        return `
+          <div class="live-bar-wrap">
+            <div class="live-bar-score">${d.isFuture ? '' : d.score > 0 ? d.score + '%' : ''}</div>
+            <div class="live-bar ${d.isToday ? 'today-bar' : ''}"
+              style="height:${h}px;background:${color};opacity:${opacity};"></div>
+          </div>`;
+      }).join('')}
+    </div>
+    <div class="live-chart-labels">
+      ${days.map((d, i) => `<span style="color:${d.isToday ? 'var(--text)' : 'var(--muted)'};font-weight:${d.isToday ? 600 : 400}">${d.label}</span>`).join('')}
+    </div>`;
+}
+
+/* 2. Per-category streaks — computed from weekData history */
+function renderCatStreaks() {
+  const el = document.getElementById('catStreaksPanel');
+  if (!el) return;
+
+  // For beta: use overall streak count as proxy; real per-cat streaks need per-cat weekData
+  // We approximate by showing how many of the last 7 days each cat was likely active
+  // based on overall scores stored in weekData (real per-cat would need deeper storage)
+  const catInfo = [
+    { type:'dopamine',  name:'Dopamine',  color:'#c8712a' },
+    { type:'serotonin', name:'Serotonin', color:'#4a9e82' },
+    { type:'oxytocin',  name:'Oxytocin',  color:'#b85070' },
+    { type:'endorphin', name:'Endorphin', color:'#5a82c0' },
+  ];
+
+  const now    = new Date();
+  const dow    = now.getDay();
+  const monOff = dow === 0 ? -6 : 1 - dow;
+
+  // Build last 7 days keys
+  const recentKeys = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now); d.setDate(now.getDate() + monOff + i);
+    return d.toISOString().slice(0, 10);
+  }).filter(k => k <= today);
+
+  el.innerHTML = catInfo.map(cat => {
+    // Estimate: days where overall score ≥ 40 suggest cat was likely partially done
+    // For today we use real live score; for past days we use stored overall score as proxy
+    const activeDays = recentKeys.filter(k => {
+      const s = k === today ? catEffectivePct(cat.type) : (weekData[k] ?? 0);
+      return s >= 40;
+    }).length;
+
+    // Consecutive streak from today backwards
+    let streak = 0;
+    for (let i = recentKeys.length - 1; i >= 0; i--) {
+      const k = recentKeys[i];
+      const s = k === today ? catEffectivePct(cat.type) : (weekData[k] ?? 0);
+      if (s >= 40) streak++;
+      else break;
+    }
+
+    const pipColors = recentKeys.map(k => {
+      const s = k === today ? catEffectivePct(cat.type) : (weekData[k] ?? 0);
+      return s >= 40 ? cat.color : 'var(--border2)';
+    });
+
+    return `
+      <div class="live-streak-row">
+        <span class="live-streak-dot" style="background:${cat.color}"></span>
+        <span class="live-streak-name">${cat.name}</span>
+        <div>
+          <div style="display:flex;align-items:baseline;gap:3px">
+            <span class="live-streak-count" style="color:${streak > 0 ? cat.color : 'var(--muted)'}">${streak}</span>
+            <span class="live-streak-label">day streak</span>
+          </div>
+          <div class="live-streak-dots">
+            ${pipColors.map(c => `<span class="live-streak-pip" style="background:${c}"></span>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+/* 3. Personal bests & milestones */
+function renderMilestones() {
+  const el = document.getElementById('milestonesPanel');
+  if (!el) return;
+
+  const currentScore = Math.round(heroScore());
+
+  // Best score: max of all stored week scores + today
+  const allScores = Object.values(weekData).concat(currentScore).filter(s => s > 0);
+  const bestScore = allScores.length ? Math.max(...allScores) : 0;
+
+  // Perfect days: days with score >= 100
+  const perfectDays = Object.values(weekData).filter(s => s >= 100).length;
+
+  // Longest streak: current streak count
+  const longestStreak = Math.max(streak.count || 0, 0);
+
+  // 21-day badge
+  const has21 = longestStreak >= 21;
+
+  const milestones = [
+    { icon:'🥇', label:'Best Hero Score',    val: bestScore > 0 ? bestScore + '%' : '—',   sub: 'Highest single-day score' },
+    { icon:'🔥', label:'Longest Streak',     val: longestStreak > 0 ? longestStreak + 'd' : '—', sub: 'Consecutive days ≥50%' },
+    { icon:'⭐', label:'Perfect Days',       val: perfectDays > 0 ? perfectDays : '—',     sub: '100% Hero Score days' },
+    { icon:'🧠', label:'21-Day Streak',      val: has21 ? '✓' : `${longestStreak}/21`,     sub: has21 ? 'Badge earned!' : 'Keep going — habit forming starts here' },
+  ];
+
+  el.innerHTML = milestones.map(m => `
+    <div class="live-milestone">
+      <div class="live-milestone-icon">${m.icon}</div>
+      <div class="live-milestone-body">
+        <strong>${m.label}</strong>
+        <span>${m.sub}</span>
+      </div>
+      <div class="live-milestone-val">${m.val}</div>
+    </div>`).join('');
+}
+
+/* 4. Brain Balance Radar chart — live SVG */
+function renderRadar() {
+  const svg = document.getElementById('radarChart');
+  const legend = document.getElementById('radarLegend');
+  if (!svg || !legend) return;
+
+  const cats = [
+    { name:'Dopamine',  color:'#c8712a', pct: catEffectivePct('dopamine')  },
+    { name:'Serotonin', color:'#4a9e82', pct: catEffectivePct('serotonin') },
+    { name:'Oxytocin',  color:'#b85070', pct: catEffectivePct('oxytocin')  },
+    { name:'Endorphin', color:'#5a82c0', pct: catEffectivePct('endorphin') },
+  ];
+
+  // Square radar with 4 axes at 0°, 90°, 180°, 270° (top, right, bottom, left)
+  const cx = 110, cy = 100, R = 76;
+  const angles = [-90, 0, 90, 180]; // top, right, bottom, left (degrees)
+  const toRad  = d => d * Math.PI / 180;
+
+  // Axis endpoints
+  const axes = angles.map(a => ({
+    x: cx + R * Math.cos(toRad(a)),
+    y: cy + R * Math.sin(toRad(a))
+  }));
+
+  // Grid rings at 25%, 50%, 75%, 100%
+  const gridRings = [0.25, 0.5, 0.75, 1.0];
+  const gridLines = gridRings.map(frac => {
+    const pts = angles.map(a => [
+      cx + R * frac * Math.cos(toRad(a)),
+      cy + R * frac * Math.sin(toRad(a))
+    ]);
+    return pts.map(p => p.join(',')).join(' ');
+  });
+
+  // Data polygon
+  const dataPoints = cats.map((cat, i) => {
+    const frac = cat.pct / 100;
+    return [
+      cx + R * frac * Math.cos(toRad(angles[i])),
+      cy + R * frac * Math.sin(toRad(angles[i]))
+    ];
+  });
+  const dataPath = dataPoints.map(p => p.join(',')).join(' ');
+
+  // Axis labels
+  const labelOffset = 14;
+  const labelPositions = [
+    { x: cx,     y: cy - R - labelOffset, anchor: 'middle'  }, // top
+    { x: cx + R + labelOffset, y: cy + 4, anchor: 'start'   }, // right
+    { x: cx,     y: cy + R + labelOffset, anchor: 'middle'  }, // bottom
+    { x: cx - R - labelOffset, y: cy + 4, anchor: 'end'     }, // left
+  ];
+
+  svg.innerHTML = `
+    <!-- Grid rings -->
+    ${gridLines.map((pts, i) => `
+      <polygon points="${pts}" fill="none" stroke="${i === 3 ? '#4a4640' : '#3d3a33'}" stroke-width="${i === 3 ? 1.5 : 0.8}"/>
+    `).join('')}
+    <!-- Axes -->
+    ${axes.map(a => `<line x1="${cx}" y1="${cy}" x2="${a.x}" y2="${a.y}" stroke="#3d3a33" stroke-width="0.8"/>`).join('')}
+    <!-- Data polygon -->
+    <polygon points="${dataPath}"
+      fill="rgba(124,106,184,0.15)" stroke="#7c6ab8" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- Data points (coloured per category) -->
+    ${dataPoints.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="${cats[i].color}" stroke="var(--surface)" stroke-width="1.5"/>`).join('')}
+    <!-- Axis labels -->
+    ${cats.map((cat, i) => `
+      <text x="${labelPositions[i].x}" y="${labelPositions[i].y}"
+        text-anchor="${labelPositions[i].anchor}"
+        fill="#7a7469" font-size="10" font-family="system-ui">${cat.name}</text>
+    `).join('')}
+    <!-- Percentage labels on data points -->
+    ${dataPoints.map((p, i) => cats[i].pct > 5 ? `
+      <text x="${p[0]}" y="${p[1] - 8}"
+        text-anchor="middle" fill="${cats[i].color}"
+        font-size="10" font-weight="600" font-family="system-ui">${Math.round(cats[i].pct)}%</text>
+    ` : '').join('')}`;
+
+  legend.innerHTML = cats.map(cat => `
+    <div class="radar-legend-item">
+      <span class="radar-legend-dot" style="background:${cat.color}"></span>
+      <span>${cat.name} — ${Math.round(cat.pct)}%</span>
+    </div>`).join('');
+}
+
+/* 5. Advanced NeuroCoach insights — computed from live + historical data */
+function renderAdvInsights() {
+  const el = document.getElementById('advInsightsPanel');
+  if (!el) return;
+
+  const score   = Math.round(heroScore());
+  const cats    = {
+    dopamine:  Math.round(catEffectivePct('dopamine')),
+    serotonin: Math.round(catEffectivePct('serotonin')),
+    oxytocin:  Math.round(catEffectivePct('oxytocin')),
+    endorphin: Math.round(catEffectivePct('endorphin')),
+  };
+  const catNames   = { dopamine:'Dopamine', serotonin:'Serotonin', oxytocin:'Oxytocin', endorphin:'Endorphin' };
+  const catColors  = { dopamine:'#c8712a', serotonin:'#4a9e82', oxytocin:'#b85070', endorphin:'#5a82c0' };
+
+  // Find weakest and strongest
+  const sorted    = Object.entries(cats).sort(([,a],[,b]) => a - b);
+  const weakest   = sorted[0];
+  const strongest = sorted[sorted.length - 1];
+
+  const insights = [];
+
+  // 1. Overall performance read
+  if (score === 0) {
+    insights.push({ icon:'🌅', text: `No habits tracked yet. Your brain is waiting. Even one completed habit today will activate a neurochemical pathway — start with whichever category feels most natural right now.` });
+  } else if (score >= 80) {
+    insights.push({ icon:'🏆', text: `Outstanding day — ${score}% Hero Score. You're in the top tier of neurochemical activation. This is the kind of day your future self will thank you for.` });
+  } else if (score >= 50) {
+    insights.push({ icon:'📈', text: `Solid day at ${score}%. You've cleared the halfway mark which earns your streak. To push higher, focus on completing the foundational habit in your weakest category: ${catNames[weakest[0]]}.` });
+  } else {
+    insights.push({ icon:'⚠️', text: `Below 50% today (${score}%). Your streak is at risk. The fastest single move: complete the ⭐⭐⭐ habit in ${catNames[weakest[0]]} to unlock its full gauge.` });
+  }
+
+  // 2. Imbalance insight
+  if (strongest[1] - weakest[1] > 35) {
+    insights.push({ icon:'⚖️', text: `Significant imbalance detected: ${catNames[strongest[0]]} is at ${strongest[1]}% while ${catNames[weakest[0]]} is only ${weakest[1]}%. A lopsided brain can mask deficits — even small wins in your weakest area compound quickly.` });
+  }
+
+  // 3. Streak insight
+  if (streak.count >= 7) {
+    insights.push({ icon:'🔥', text: `${streak.count}-day streak — you're in the habit-formation zone. Research suggests 21 days of consistent behaviour begins to automate the neural pathway. You're ${21 - streak.count > 0 ? 21 - streak.count + ' days from' : 'past'} that threshold.` });
+  } else if (streak.count > 0) {
+    insights.push({ icon:'🔥', text: `${streak.count}-day streak building. Protect it — the activation energy to restart a broken streak is 3× higher than maintaining one. Keep going tomorrow.` });
+  }
+
+  // 4. Specific category nudge
+  if (cats.serotonin < 40) {
+    insights.push({ icon:'🌸', text: `Low Serotonin detected (${cats.serotonin}%). This is your mood stabilisation system. Inadequate sleep is the most common culprit — prioritise it tonight. Even one night of 7–9 hrs can meaningfully shift tomorrow's baseline.` });
+  }
+  if (cats.oxytocin < 30) {
+    insights.push({ icon:'🤝', text: `Oxytocin is your lowest system today at ${cats.oxytocin}%. Human connection is not a luxury — it's a physiological need. One meaningful conversation or physical touch before day's end can shift your stress chemistry significantly.` });
+  }
+  if (cats.dopamine === 0) {
+    insights.push({ icon:'⚡', text: `Dopamine is completely inactive today. Without at least one block of focused work, your brain's reward system has no anchor. Even 20 minutes of intentional effort on your most important task can break the inertia.` });
+  }
+
+  // 5. Historical pattern (if data available)
+  const dayScores = Object.entries(weekData).sort(([a],[b]) => a.localeCompare(b));
+  if (dayScores.length >= 3) {
+    const recent3 = dayScores.slice(-3).map(([,s]) => s);
+    const trend   = recent3[2] - recent3[0];
+    if (trend > 15) {
+      insights.push({ icon:'📊', text: `Your scores have been trending upward over the last 3 days (+${trend}%). Momentum is building. This is the most powerful time to commit to a new foundational habit.` });
+    } else if (trend < -15) {
+      insights.push({ icon:'📊', text: `Your scores have declined over the last 3 days (${trend}%). This is a normal dip — but worth noticing. Check which category dropped first; that's usually the trigger.` });
+    }
+  }
+
+  el.innerHTML = insights.map(ins => `
+    <div class="adv-insight-row">
+      <span class="adv-insight-icon">${ins.icon}</span>
+      <span>${ins.text}</span>
+    </div>`).join('');
+}
 
 /**
  * Brain Balance Feedback
@@ -1638,18 +2381,18 @@ function nativeShare() {
 
 /* ═══════════════════════════════════════════════════════════
    GENERATE SHARE IMAGE — Canvas-drawn score card
-   Draws a 1080×1080 px image and triggers download / share
+   1080×1080 px, matches app dark matte earthy theme
    ═══════════════════════════════════════════════════════════ */
 async function generateShareImage() {
-  const score  = Math.round(heroScore());
-  const now    = new Date();
-  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  const score     = Math.round(heroScore());
+  const now       = new Date();
+  const days      = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr   = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
 
-  const grades  = [[100,'S','#4a9e82'],[80,'A','#4a9e82'],[60,'B','#5a82c0'],[40,'C','#c8712a'],[20,'D','#b85070'],[0,'—','#7a7469']];
+  const grades     = [[100,'S','#4a9e82'],[80,'A','#4a9e82'],[60,'B','#5a82c0'],[40,'C','#c8712a'],[20,'D','#b85070'],[0,'—','#7a7469']];
   const [, grade, gradeColor] = grades.find(([min]) => score >= min) || grades[5];
-  const gradeText = { 'S':'Perfect Day','A':'Excellent','B':'Good','C':'Okay','D':'Low','—':'Just Starting' }[grade];
+  const gradeText  = { 'S':'Perfect Day','A':'Excellent','B':'Good','C':'Okay','D':'Low','—':'Just Starting' }[grade];
 
   const catData = [
     { name:'Dopamine',  pct: Math.round(catEffectivePct('dopamine')),  color:'#c8712a' },
@@ -1658,125 +2401,161 @@ async function generateShareImage() {
     { name:'Endorphin', pct: Math.round(catEffectivePct('endorphin')), color:'#5a82c0' },
   ];
 
-  const W = 1080, H = 1080;
+  const W = 1080, H = 1080, PAD = 72;
   const canvas = document.createElement('canvas');
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
 
-  // ── Background ──────────────────────────────────────────
+  // ── Background — #1c1a17 (app --bg) ───────────────────────
   ctx.fillStyle = '#1c1a17';
   ctx.fillRect(0, 0, W, H);
 
-  // Subtle radial glow
-  const grd = ctx.createRadialGradient(W/2, H/3, 80, W/2, H/3, 600);
-  grd.addColorStop(0, 'rgba(124,106,184,0.12)');
+  // Subtle radial glow matching app ambient orbs
+  const grd = ctx.createRadialGradient(W * 0.35, H * 0.25, 60, W * 0.35, H * 0.25, 550);
+  grd.addColorStop(0, 'rgba(200,113,42,0.07)');
+  grd.addColorStop(0.5, 'rgba(124,106,184,0.05)');
   grd.addColorStop(1, 'rgba(0,0,0,0)');
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, W, H);
 
-  // ── Top accent bar ──────────────────────────────────────
-  const barGrd = ctx.createLinearGradient(0, 0, W, 0);
-  barGrd.addColorStop(0,    '#c8712a');
-  barGrd.addColorStop(0.33, '#b85070');
-  barGrd.addColorStop(0.66, '#4a9e82');
-  barGrd.addColorStop(1,    '#5a82c0');
-  ctx.fillStyle = barGrd;
+  // ── Top gradient accent bar (matches app header top-bar) ──
+  const accentGrd = ctx.createLinearGradient(0, 0, W, 0);
+  accentGrd.addColorStop(0,    '#c8712a');
+  accentGrd.addColorStop(0.33, '#b85070');
+  accentGrd.addColorStop(0.66, '#4a9e82');
+  accentGrd.addColorStop(1,    '#5a82c0');
+  ctx.fillStyle = accentGrd;
   ctx.fillRect(0, 0, W, 8);
 
-  // ── Brand ───────────────────────────────────────────────
+  // ── Surface card background (--surface #242119) ───────────
+  ctx.fillStyle = '#242119';
+  roundRect(ctx, PAD - 20, 50, W - (PAD - 20) * 2, H - 110);
+  ctx.fill();
+
+  // ── Brand: NeuroHabit ──────────────────────────────────────
   ctx.fillStyle = '#e8e3d8';
-  ctx.font = '500 36px "Geist", system-ui, sans-serif';
-  ctx.fillText('NeuroHabit', 72, 96);
+  ctx.font = '600 38px system-ui, sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('NeuroHabit', PAD, 118);
 
   ctx.fillStyle = '#7a7469';
-  ctx.font = '400 18px "Geist", system-ui, sans-serif';
-  ctx.fillText('BY THE AUFTHORITY', 72, 124);
+  ctx.font = '400 17px system-ui, sans-serif';
+  ctx.fillText('BY THE AUFTHORITY', PAD, 144);
 
+  // ── Date (right-aligned) ───────────────────────────────────
   ctx.fillStyle = '#7a7469';
-  ctx.font = '400 22px "Geist", system-ui, sans-serif';
+  ctx.font = '400 20px system-ui, sans-serif';
   ctx.textAlign = 'right';
-  ctx.fillText(dateStr, W - 72, 96);
+  ctx.fillText(dateStr, W - PAD, 118);
   ctx.textAlign = 'left';
 
-  // ── Hero score ──────────────────────────────────────────
-  ctx.fillStyle = gradeColor;
-  ctx.font = '300 260px "Geist", system-ui, sans-serif';
-  ctx.fillText(`${score}`, 72, 410);
-
-  ctx.fillStyle = '#7a7469';
-  ctx.font = '400 72px "Geist", system-ui, sans-serif';
-  ctx.fillText('%', 72 + ctx.measureText(`${score}`).width + 8, 380);
-
-  ctx.fillStyle = gradeColor;
-  ctx.font = '600 32px "Geist", system-ui, sans-serif';
-  ctx.fillText(`Grade ${grade}  ·  ${gradeText}`, 72, 456);
-
-  // ── Divider ─────────────────────────────────────────────
+  // ── Thin rule ──────────────────────────────────────────────
   ctx.strokeStyle = '#3d3a33';
-  ctx.lineWidth = 1.5;
-  ctx.beginPath();
-  ctx.moveTo(72, 494);
-  ctx.lineTo(W - 72, 494);
-  ctx.stroke();
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, 168); ctx.lineTo(W - PAD, 168); ctx.stroke();
 
-  // ── Brain Balance label ──────────────────────────────────
+  // ── Hero score — score number and % rendered separately ───
+  // Measure the score digits at the chosen font size, then place
+  // the % symbol immediately after with correct spacing.
+  const SCORE_SIZE = 240;
+  const PCT_SIZE   = 80;
+
+  ctx.font = `300 ${SCORE_SIZE}px system-ui, sans-serif`;
+  ctx.textBaseline = 'alphabetic';
+  const scoreStr   = `${score}`;
+  const scoreWidth = ctx.measureText(scoreStr).width;
+
+  // Score digits
+  ctx.fillStyle = gradeColor;
+  ctx.fillText(scoreStr, PAD, 420);
+
+  // % — placed at PAD + scoreWidth + small gap, at a raised baseline
+  ctx.font = `300 ${PCT_SIZE}px system-ui, sans-serif`;
   ctx.fillStyle = '#7a7469';
-  ctx.font = '500 22px "Geist", system-ui, sans-serif';
-  ctx.letterSpacing = '3px';
-  ctx.fillText('BRAIN BALANCE', 72, 544);
-  ctx.letterSpacing = '0px';
+  ctx.fillText('%', PAD + scoreWidth + 10, 370);
 
-  // ── Category bars ────────────────────────────────────────
-  const barY0 = 570, barH = 12, barGap = 52, trackW = W - 144;
+  // ── Grade label ────────────────────────────────────────────
+  ctx.font = '600 28px system-ui, sans-serif';
+  ctx.fillStyle = gradeColor;
+  ctx.fillText(`Grade ${grade}  ·  ${gradeText}`, PAD, 466);
+
+  // ── Divider ────────────────────────────────────────────────
+  ctx.strokeStyle = '#3d3a33';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, 504); ctx.lineTo(W - PAD, 504); ctx.stroke();
+
+  // ── BRAIN BALANCE label ────────────────────────────────────
+  ctx.fillStyle = '#7a7469';
+  ctx.font = '500 18px system-ui, sans-serif';
+  ctx.fillText('BRAIN BALANCE', PAD, 548);
+
+  // ── Category bars ──────────────────────────────────────────
+  const trackW = W - PAD * 2;
+  const barH   = 10;
+  const rowH   = 58;
+  const startY = 570;
+
   catData.forEach((cat, i) => {
-    const y = barY0 + i * barGap;
-    // Name
+    const rowY = startY + i * rowH;
+
+    // Category name
     ctx.fillStyle = '#7a7469';
-    ctx.font = '400 22px "Geist", system-ui, sans-serif';
-    ctx.fillText(cat.name, 72, y);
-    // Pct
+    ctx.font = '400 20px system-ui, sans-serif';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(cat.name, PAD, rowY);
+
+    // Percentage (right-aligned)
     ctx.fillStyle = cat.color;
-    ctx.font = '600 22px "Geist", system-ui, sans-serif';
+    ctx.font = '600 20px system-ui, sans-serif';
     ctx.textAlign = 'right';
-    ctx.fillText(`${cat.pct}%`, W - 72, y);
+    ctx.fillText(`${cat.pct}%`, W - PAD, rowY);
     ctx.textAlign = 'left';
-    // Track
-    roundRect(ctx, 72, y + 10, trackW, barH, 6);
+
+    // Track background (--surface2 #2e2b24)
+    const trackY = rowY + 9;
+    roundRect(ctx, PAD, trackY, trackW, barH, 5);
     ctx.fillStyle = '#2e2b24';
     ctx.fill();
-    // Fill
-    const fillW = (cat.pct / 100) * trackW;
+
+    // Filled portion
+    const fillW = Math.max(0, (cat.pct / 100) * trackW);
     if (fillW > 0) {
-      roundRect(ctx, 72, y + 10, fillW, barH, 6);
+      roundRect(ctx, PAD, trackY, fillW, barH, 5);
       ctx.fillStyle = cat.color;
       ctx.fill();
     }
   });
 
-  // ── Feedback text ────────────────────────────────────────
-  const feedback = getBrainBalanceFeedback();
-  ctx.fillStyle = '#e8e3d8';
-  ctx.font = 'italic 26px "Geist", system-ui, sans-serif';
-  wrapText(ctx, feedback, 72, 856, trackW, 38);
+  // ── Divider ────────────────────────────────────────────────
+  const afterBarsY = startY + catData.length * rowH + 4;
+  ctx.strokeStyle = '#3d3a33';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PAD, afterBarsY); ctx.lineTo(W - PAD, afterBarsY); ctx.stroke();
 
-  // ── Footer ───────────────────────────────────────────────
+  // ── Brain balance feedback ─────────────────────────────────
+  const feedbackY = afterBarsY + 32;
+  ctx.fillStyle = '#e8e3d8';
+  ctx.font = 'italic 400 22px system-ui, sans-serif';
+  ctx.textBaseline = 'alphabetic';
+  wrapText(ctx, getBrainBalanceFeedback(), PAD, feedbackY, trackW, 34);
+
+  // ── Footer ─────────────────────────────────────────────────
   ctx.fillStyle = '#504c45';
-  ctx.font = '400 22px "Geist", system-ui, sans-serif';
+  ctx.font = '400 18px system-ui, sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('neurohabit.app  ·  by The Aufthority', W / 2, H - 52);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('neurohabit.app  ·  by The Aufthority', W / 2, H - 46);
   ctx.textAlign = 'left';
 
-  // ── Export ───────────────────────────────────────────────
+  // ── Export ─────────────────────────────────────────────────
   canvas.toBlob(async (blob) => {
     const file = new File([blob], 'neurohabit-score.png', { type: 'image/png' });
-    // Try native share with image (mobile)
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
         await navigator.share({ files: [file], title: 'My NeuroHabit Score', text: buildShareText() });
         return;
-      } catch (e) { /* fall through to download */ }
+      } catch (e) { /* fall through */ }
     }
-    // Desktop fallback: download the image
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = 'neurohabit-score.png';
@@ -1928,6 +2707,8 @@ document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.classList.add('active');
     document.getElementById(`page-${tab}`).classList.add('page-active');
     document.getElementById(`page-${tab}`).scrollTop = 0;
+    // Refresh profile stats whenever that tab is opened
+    if (tab === 'profile') renderProfile();
   });
 });
 
@@ -1950,6 +2731,62 @@ function handleSignup() {
 function skipLogin() { userData.skipAuth = true; sv(UK, userData); launchApp(); }
 
 /* ═══════════════════════════════════════════════════════════
+   PROFILE PAGE
+   ═══════════════════════════════════════════════════════════ */
+function renderProfile() {
+  const name   = userData.name || 'Guest';
+  const email  = userData.skipAuth ? 'No account — guest session' : (userData.email || userData.name || '—');
+  const initials = name.slice(0, 2).toUpperCase();
+  const score  = Math.round(heroScore());
+  const grades = [[100,'S'],[80,'A'],[60,'B'],[40,'C'],[20,'D'],[0,'—']];
+  const [, g]  = grades.find(([min]) => score >= min) || grades[5];
+
+  document.getElementById('profileAvatar').textContent = initials;
+  document.getElementById('profileName').textContent   = name.charAt(0).toUpperCase() + name.slice(1);
+  document.getElementById('profileEmail').textContent  = email;
+  document.getElementById('profilePlanBadge').textContent = userData.skipAuth ? 'Guest' : 'Free';
+  document.getElementById('statHeroScore').textContent = score + '%';
+  document.getElementById('statStreak').textContent    = streak.count || 0;
+  document.getElementById('statGrade').textContent     = g;
+}
+
+function editProfile() {
+  const current = userData.name || '';
+  const newName = prompt('Enter your display name:', current);
+  if (newName === null) return; // cancelled
+  const trimmed = newName.trim();
+  if (!trimmed) { alert('Name cannot be empty.'); return; }
+  userData.name = trimmed;
+  sv(UK, userData);
+  renderProfile();
+  renderCoach(); // update greeting
+}
+
+function changePassword() {
+  // TODO: firebase.auth().sendPasswordResetEmail(userData.email)
+  alert('A password reset email will be sent to your address.\n\n(Connect Firebase to enable this feature.)');
+}
+
+function handleSignOut() {
+  if (!confirm('Sign out of NeuroHabit?')) return;
+  // TODO: firebase.auth().signOut()
+  userData = { name: null, skipAuth: false };
+  sv(UK, userData);
+  // Return to login screen
+  document.getElementById('screen-app').style.display  = 'none';
+  document.getElementById('screen-app').classList.remove('screen-active');
+  document.getElementById('appHeader').style.display   = 'none';
+  document.getElementById('bottomNav').style.display   = 'none';
+  document.getElementById('screen-login').style.display = 'flex';
+  document.getElementById('screen-login').classList.add('screen-active');
+  // Reset nav to Coach tab
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-tab="coach"]').classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+  document.getElementById('page-coach').classList.add('page-active');
+}
+
+/* ═══════════════════════════════════════════════════════════
    LAUNCH & INIT
    ═══════════════════════════════════════════════════════════ */
 function launchApp() {
@@ -1968,7 +2805,7 @@ function initApp() {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   document.getElementById('headerDate').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
   Object.keys(HABITS).forEach(t => { renderSection(t); updateCommitUI(t); });
-  updateHeader(); renderCoach(); renderWeek(); checkStreak();
+  updateHeader(); renderCoach(); renderWeek(); checkStreak(); renderProfile();
 }
 
 function confirmNewDay() {
