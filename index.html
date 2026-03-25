@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1c1a17">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="NeuroHabit">
+<meta name="description" content="Neuroscience-based daily habit tracker by The Aufthority">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231c1a17'/><text y='128' x='90' text-anchor='middle' font-size='100'>🧠</text></svg>">
+<title>NeuroHabit</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<!-- ============================================================
+     NEUROHABIT PWA — by The Aufthority
+     Revisions:
+       1. Brand subtitle "By The Aufthority"
+       2. Serotonin: OR-gate for foundational (any 1 unlocks cap)
+       3. Social Laughter → ⭐⭐ (weight 2)
+       4. Info icon → 2-sentence habit-info modal
+       5. Commit/lock with 60-min edit window
+       6. Share score card + brain balance feedback
+     ============================================================ -->
+
+<style>
+/* ═══ DESIGN TOKENS ═════════════════════════════════════════ */
+:root {
+  --bg:        #1c1a17;
+  --surface:   #242119;
+  --surface2:  #2e2b24;
+  --surface3:  #383430;
+  --border:    #3d3a33;
+  --border2:   #4a4640;
+  --text:      #e8e3d8;
+  --muted:     #7a7469;
+  --subtle:    #504c45;
+
+  --dopamine:  #c8712a;
+  --serotonin: #4a9e82;
+  --oxytocin:  #b85070;
+  --endorphin: #5a82c0;
+  --coach:     #7c6ab8;
+  --warning:   #b8882a;
+  --locked:    #8a7a6a;
+
+  --header-h:  80px;
+  --nav-h:     64px;
+  --safe-t:    env(safe-area-inset-top, 0px);
+  --safe-b:    env(safe-area-inset-bottom, 0px);
+  --radius-sm: 10px;
+  --radius:    16px;
+  --radius-lg: 22px;
+}
+
+/* ═══ RESET ══════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { height: 100%; overscroll-behavior: none; }
+body { background: var(--bg); color: var(--text); font-family: 'Geist', system-ui, sans-serif; font-size: 15px; min-height: 100%; -webkit-font-smoothing: antialiased; overscroll-behavior: none; }
+
+/* ═══ SCREEN MANAGER ═════════════════════════════════════════ */
+.screen { position: fixed; inset: 0; display: flex; flex-direction: column; background: var(--bg); transform: translateX(100%); transition: transform 0.3s cubic-bezier(.4,0,.2,1); z-index: 10; }
+.screen.screen-active { transform: translateX(0); }
+.screen.screen-left   { transform: translateX(-30%); }
+
+/* ═══ LOGIN SCREEN ═══════════════════════════════════════════ */
+#screen-login { align-items: center; justify-content: center; padding: 40px 28px; }
+.login-logo { font-size: 60px; margin-bottom: 16px; animation: floatBrain 3s ease-in-out infinite; }
+@keyframes floatBrain { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+.login-title { font-family: 'Instrument Serif', serif; font-size: 34px; font-weight: 400; letter-spacing: -0.5px; text-align: center; line-height: 1; }
+/* ── REVISION 1: Brand subtitle — constrained to title width ── */
+.login-brand-sub {
+  font-size: 7.5px;
+  letter-spacing: 0.22em;        /* em-based so it scales with font-size, not absolute px */
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 6px;
+  margin-bottom: 40px;
+  /* Prevent overflow beyond "NeuroHabit" visual width */
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  /* Nudge tracking inward so rendered width ≈ title width */
+  word-spacing: 0.15em;
+}
+.login-sub { font-size: 13px; color: var(--muted); text-align: center; line-height: 1.6; margin-bottom: 36px; max-width: 280px; }
+.login-form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 11px; }
+.login-input { width: 100%; padding: 13px 15px; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--text); font-family: 'Geist', sans-serif; font-size: 14px; outline: none; transition: border-color 0.2s; }
+.login-input:focus { border-color: var(--coach); }
+.login-input::placeholder { color: var(--muted); }
+.btn-primary { padding: 13px 20px; border-radius: var(--radius-sm); border: none; cursor: pointer; font-family: 'Geist', sans-serif; font-size: 14px; font-weight: 600; transition: all 0.2s; background: var(--coach); color: var(--text); }
+.btn-primary:active { transform: scale(0.97); }
+.login-divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; }
+.login-divider::before, .login-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.btn-secondary { padding: 13px 20px; border-radius: var(--radius-sm); border: 1px solid var(--border2); cursor: pointer; font-family: 'Geist', sans-serif; font-size: 14px; color: var(--muted); background: none; transition: all 0.2s; }
+.btn-secondary:hover { color: var(--text); }
+.login-skip { margin-top: 14px; font-size: 12px; color: var(--muted); text-align: center; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ═══ PERSISTENT HEADER ══════════════════════════════════════ */
+.app-header { position: fixed; top: 0; left: 0; right: 0; z-index: 200; background: var(--surface); border-bottom: 1px solid var(--border); padding: calc(var(--safe-t)) 18px 0; height: calc(var(--safe-t) + var(--header-h)); display: flex; align-items: flex-end; padding-bottom: 11px; }
+.header-brand { flex: 1; min-width: 0; }
+.header-brand h1 { font-family: 'Instrument Serif', serif; font-size: 18px; font-weight: 400; letter-spacing: -0.3px; line-height: 1; color: var(--text); }
+/* ── REVISION 1: header brand subtitle — must not exceed h1 width ── */
+.header-brand-sub {
+  font-size: 6.5px;
+  /* letter-spacing tuned so "BY THE AUFTHORITY" ≈ width of "NeuroHabit" at 18px Instrument Serif */
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 2px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+.header-brand-date { font-size: 11px; color: var(--muted); margin-top: 1px; display: block; }
+.header-right { display: flex; align-items: center; gap: 9px; flex-shrink: 0; }
+.streak-badge { display: flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 500; color: var(--muted); }
+
+/* Score pill */
+.score-pill { display: flex; align-items: center; gap: 9px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 40px; padding: 6px 13px 6px 9px; cursor: pointer; }
+.score-ring-wrap { position: relative; width: 34px; height: 34px; flex-shrink: 0; }
+.score-ring-wrap svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+.ring-track { fill: none; stroke: var(--border2); stroke-width: 3; }
+.ring-fill  { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 0.55s cubic-bezier(.4,0,.2,1); }
+.score-ring-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: var(--text); }
+.score-pill-info .val { font-size: 13px; font-weight: 600; line-height: 1; color: var(--text); }
+.score-pill-info .lbl { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.grade-chip { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border2); display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', serif; font-size: 16px; transition: all 0.35s; flex-shrink: 0; cursor: pointer; color: var(--muted); }
+
+/* ═══ BOTTOM NAV ══════════════════════════════════════════════ */
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 200; background: var(--surface); border-top: 1px solid var(--border); padding-bottom: var(--safe-b); height: calc(var(--nav-h) + var(--safe-b)); }
+.nav-tabs { display: flex; width: 100%; height: var(--nav-h); }
+.nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: none; padding: 10px 4px; transition: all 0.18s; }
+.nav-tab .tab-icon  { font-size: 18px; line-height: 1; transition: transform 0.2s cubic-bezier(.34,1.56,.64,1); }
+.nav-tab .tab-label { font-size: 9.5px; font-weight: 500; color: var(--muted); letter-spacing: 0.2px; transition: color 0.2s; }
+.nav-tab .tab-pip   { width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: all 0.2s; margin-top: 1px; }
+.nav-tab[data-tab="coach"]     { --tc: var(--coach); }
+.nav-tab[data-tab="dopamine"]  { --tc: var(--dopamine); }
+.nav-tab[data-tab="serotonin"] { --tc: var(--serotonin); }
+.nav-tab[data-tab="oxytocin"]  { --tc: var(--oxytocin); }
+.nav-tab[data-tab="endorphin"] { --tc: var(--endorphin); }
+.nav-tab.active .tab-icon  { transform: translateY(-2px) scale(1.1); }
+.nav-tab.active .tab-label { color: var(--tc); font-weight: 600; }
+.nav-tab.active .tab-pip   { background: var(--tc); }
+
+/* ═══ PAGE CONTAINER ═════════════════════════════════════════ */
+.page-container { position: absolute; inset: 0; top: calc(var(--safe-t) + var(--header-h)); bottom: calc(var(--safe-b) + var(--nav-h)); overflow: hidden; }
+.page { position: absolute; inset: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 32px; opacity: 0; pointer-events: none; transform: translateX(20px); transition: opacity 0.2s, transform 0.2s; }
+.page.page-active { opacity: 1; pointer-events: all; transform: translateX(0); }
+
+/* ═══ PAGE HERO ══════════════════════════════════════════════ */
+.page-hero { padding: 20px 18px 16px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+.page-hero-top { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.accent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.page-hero h2 { font-family: 'Instrument Serif', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.4px; color: var(--text); }
+.page-hero p { font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+
+/* Gauge */
+.cat-gauge { margin-top: 14px; }
+.cat-gauge-track { height: 6px; border-radius: 3px; background: var(--surface2); border: 1px solid var(--border); position: relative; overflow: visible; }
+.cat-gauge-raw  { position: absolute; inset: 0; border-radius: 3px; background: var(--ac, #888); opacity: 0.15; transition: width 0.4s cubic-bezier(.4,0,.2,1); width: 0%; }
+.cat-gauge-fill { position: absolute; inset: 0; border-radius: 3px; background: var(--ac, #888); transition: width 0.5s cubic-bezier(.4,0,.2,1); width: 0%; }
+.cat-gauge-marker { position: absolute; top: -3px; bottom: -3px; left: 50%; width: 2px; transform: translateX(-50%); background: repeating-linear-gradient(to bottom, var(--ac, #888) 0 3px, transparent 3px 6px); opacity: 0; transition: opacity 0.3s; border-radius: 1px; }
+.cat-gauge-marker.show { opacity: 0.65; }
+.cat-gauge-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 6px; }
+.cat-gauge-label { font-size: 12px; font-weight: 600; }
+.cap-badge { display: none; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: color-mix(in srgb, var(--ac) 10%, var(--surface2)); border: 1px solid color-mix(in srgb, var(--ac) 28%, transparent); color: var(--ac); }
+.cap-badge.show { display: flex; }
+
+/* Pips */
+.pips-row { display: flex; gap: 3px; padding: 6px 18px 3px; }
+.pip-seg { flex: 1; height: 3px; border-radius: 2px; background: var(--border2); transition: all 0.3s cubic-bezier(.34,1.56,.64,1); }
+.pip-seg.lit { background: var(--ac); box-shadow: 0 0 4px color-mix(in srgb, var(--ac) 50%, transparent); }
+.pip-seg.dim { background: color-mix(in srgb, var(--ac) 20%, var(--border2)); }
+
+/* Max note */
+.max-note { display: none; align-items: center; gap: 7px; margin: 3px 14px 4px; padding: 7px 12px; background: color-mix(in srgb, var(--serotonin) 10%, var(--surface2)); border: 1px solid color-mix(in srgb, var(--serotonin) 28%, transparent); border-radius: var(--radius-sm); font-size: 12px; color: var(--serotonin); }
+.max-note.show { display: flex; }
+
+/* ═══ COMMIT BAR (Revision 5) ════════════════════════════════ */
+.commit-bar {
+  margin: 8px 14px 6px;
+  padding: 11px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.commit-bar-text { flex: 1; font-size: 12px; color: var(--muted); line-height: 1.4; }
+.commit-bar-text strong { display: block; font-size: 13px; color: var(--text); margin-bottom: 1px; }
+.commit-btn {
+  padding: 7px 14px; border-radius: 8px; border: none;
+  font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+  background: var(--ac, #888); color: #fff;
+}
+.commit-btn:active { transform: scale(0.95); }
+.commit-btn.committed {
+  background: var(--surface2);
+  color: var(--locked);
+  border: 1px solid var(--border2);
+  cursor: default;
+}
+.commit-edit-btn {
+  padding: 7px 12px; border-radius: 8px;
+  border: 1px solid var(--border2); background: none;
+  color: var(--muted); font-family: 'Geist', sans-serif;
+  font-size: 11px; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+}
+.commit-edit-btn:hover { color: var(--text); }
+.commit-edit-btn.hidden { display: none; }
+.commit-timer { font-size: 10px; color: var(--warning); margin-top: 2px; display: none; }
+.commit-timer.show { display: block; }
+.locked-overlay {
+  position: absolute; inset: 0; border-radius: var(--radius);
+  cursor: not-allowed;
+  z-index: 2;
+}
+/* Locked section dim */
+.habit-list.section-locked .habit-row:not(.done) { opacity: 0.38; pointer-events: none; }
+.habit-list.section-locked .habit-row.done { pointer-events: none; }
+
+/* ═══ HABIT ROWS ════════════════════════════════════════════  */
+.habit-list { padding: 4px 14px; display: flex; flex-direction: column; gap: 5px; }
+.habit-row { display: flex; align-items: center; gap: 11px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 13px; cursor: pointer; user-select: none; transition: background 0.15s, border-color 0.15s, transform 0.12s; position: relative; overflow: hidden; -webkit-user-select: none; }
+.habit-row::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--ac); opacity: 0; transition: opacity 0.2s; border-radius: 0 2px 2px 0; }
+.habit-row.done::before { opacity: 1; }
+.habit-row:hover { background: var(--surface2); border-color: var(--border2); }
+.habit-row:active { transform: scale(0.982); }
+.habit-row.foundational { background: color-mix(in srgb, var(--ac) 5%, var(--surface)); }
+.habit-row.foundational:hover { background: color-mix(in srgb, var(--ac) 9%, var(--surface2)); }
+.habit-row.flex-active { border-style: dashed; border-color: color-mix(in srgb, var(--warning) 40%, var(--border)); }
+
+/* Checkbox */
+.habit-check { width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: var(--surface2); transition: all 0.2s cubic-bezier(.34,1.56,.64,1); }
+.habit-check svg { opacity: 0; transform: scale(0); transition: all 0.2s cubic-bezier(.34,1.56,.64,1); }
+.habit-row.done .habit-check { background: var(--ac); border-color: var(--ac); }
+.habit-row.done .habit-check svg { opacity: 1; transform: scale(1); }
+
+/* Body */
+.habit-body { flex: 1; min-width: 0; }
+.habit-label { font-size: 13.5px; line-height: 1.4; color: var(--text); transition: color 0.2s; display: block; }
+.habit-row.done .habit-label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--subtle); }
+.habit-meta { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+.habit-type-tag { font-size: 10px; color: var(--muted); }
+.habit-row.foundational .habit-type-tag { color: color-mix(in srgb, var(--ac) 70%, var(--muted)); }
+.flex-tag { font-size: 9px; padding: 1px 5px; border-radius: 4px; background: color-mix(in srgb, var(--warning) 12%, var(--surface2)); color: var(--warning); border: 1px solid color-mix(in srgb, var(--warning) 25%, transparent); display: none; }
+.flex-tag.show { display: inline; }
+
+/* Right-side controls */
+.habit-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.weight-badge { font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; border: 1px solid var(--border2); background: var(--surface2); color: var(--muted); transition: all 0.25s; white-space: nowrap; }
+.habit-row.done .weight-badge { background: color-mix(in srgb, var(--ac) 12%, var(--surface2)); border-color: color-mix(in srgb, var(--ac) 30%, transparent); color: var(--ac); }
+.flex-toggle-btn { font-size: 9px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border2); background: var(--surface2); color: var(--muted); cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+.flex-toggle-btn.active { color: var(--warning); border-color: color-mix(in srgb, var(--warning) 35%, transparent); background: color-mix(in srgb, var(--warning) 8%, var(--surface2)); }
+
+/* ── Multi-session tier cycler ── */
+.session-flex-ctrl {
+  display: flex; align-items: center; gap: 3px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.session-tier-btn {
+  background: none; border: none;
+  color: var(--muted); cursor: pointer;
+  font-size: 14px; line-height: 1;
+  padding: 2px 6px;
+  transition: color 0.15s, background 0.15s;
+}
+.session-tier-btn:hover { color: var(--text); background: var(--surface3); }
+.session-tier-label {
+  font-size: 9px; font-weight: 600;
+  color: var(--warning);
+  white-space: nowrap;
+  padding: 0 2px;
+  min-width: 72px;
+  text-align: center;
+}
+
+/* ── REVISION 4: Info icon button ── */
+.habit-info-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--muted); padding: 2px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; transition: color 0.2s;
+  line-height: 1;
+}
+.habit-info-btn:hover { color: var(--text); }
+.habit-info-btn svg { display: block; }
+
+/* ═══ MODALS ═════════════════════════════════════════════════ */
+/* Shared bottom-sheet modal */
+.modal-overlay { position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.55); display: none; align-items: flex-end; justify-content: center; padding: 0 0 calc(var(--safe-b) + 12px); animation: fadeIn 0.15s ease; }
+.modal-overlay.show { display: flex; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-card { background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-sm); padding: 20px 20px 22px; max-width: 480px; width: 100%; animation: slideUp 0.2s cubic-bezier(.4,0,.2,1); }
+@keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-handle { width: 36px; height: 4px; border-radius: 2px; background: var(--border2); margin: 0 auto 16px; }
+.modal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.modal-icon  { font-size: 20px; }
+.modal-title { font-family: 'Instrument Serif', serif; font-size: 18px; font-weight: 400; }
+.modal-body  { font-size: 13px; color: var(--muted); line-height: 1.65; }
+.modal-close { margin-top: 16px; width: 100%; padding: 11px; background: var(--surface2); border: 1px solid var(--border2); border-radius: var(--radius-sm); color: var(--muted); font-family: 'Geist', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.modal-close:hover { color: var(--text); }
+
+/* ── REVISION 4: Habit info modal has examples list ── */
+.habit-examples { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.habit-examples p { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 6px; }
+.habit-examples ul { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.habit-examples li { font-size: 13px; color: var(--text); display: flex; align-items: center; gap: 7px; }
+.habit-examples li::before { content: '→'; color: var(--muted); font-size: 11px; flex-shrink: 0; }
+
+/* ═══ SHARE CARD (Revision 6) ════════════════════════════════ */
+/* Share modal uses modal-overlay, plus custom card content */
+.share-card-inner {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 14px;
+}
+.share-card-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.share-card-brand { font-family: 'Instrument Serif', serif; font-size: 16px; }
+.share-card-brand span { display: block; font-family: 'Geist', sans-serif; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+.share-card-date { font-size: 11px; color: var(--muted); }
+.share-hero-score { display: flex; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+.share-hero-num { font-family: 'Instrument Serif', serif; font-size: 52px; font-weight: 400; line-height: 1; }
+.share-hero-pct { font-size: 22px; color: var(--muted); }
+.share-grade { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+/* Brain balance bar (Revision 6) */
+.brain-balance { margin: 12px 0 14px; }
+.brain-balance-label { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 7px; }
+.brain-balance-bars { display: flex; flex-direction: column; gap: 5px; }
+.balance-row { display: flex; align-items: center; gap: 8px; }
+.balance-name { font-size: 11px; color: var(--muted); width: 70px; flex-shrink: 0; }
+.balance-track { flex: 1; height: 4px; border-radius: 2px; background: var(--surface2); overflow: hidden; }
+.balance-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+.balance-pct { font-size: 10px; font-weight: 600; width: 30px; text-align: right; flex-shrink: 0; }
+/* Brain balance feedback sentence */
+.brain-balance-feedback { font-size: 12px; color: var(--text); line-height: 1.5; margin-top: 8px; font-style: italic; }
+/* Category scores row */
+.share-cats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 12px; }
+.share-cat { background: var(--surface2); border-radius: 8px; padding: 8px 10px; }
+.share-cat-name { font-size: 9.5px; color: var(--muted); margin-bottom: 3px; letter-spacing: 0.3px; }
+.share-cat-score { font-size: 16px; font-weight: 600; font-family: 'Instrument Serif', serif; }
+.share-tagline { font-size: 11px; color: var(--muted); text-align: center; margin-top: 10px; letter-spacing: 0.5px; }
+.share-actions { display: flex; gap: 8px; }
+.share-action-btn { flex: 1; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface2); color: var(--text); font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; text-align: center; }
+.share-action-btn.primary { background: var(--coach); border-color: var(--coach); }
+.share-action-btn:hover { opacity: 0.85; }
+
+/* ═══ COACH PAGE ═════════════════════════════════════════════ */
+#screen-app { overflow: hidden; }
+.coach-page-inner { padding: 20px 18px 0; }
+.coach-welcome { margin-bottom: 18px; }
+.coach-welcome h2 { font-family: 'Instrument Serif', serif; font-size: 21px; font-weight: 400; letter-spacing: -0.4px; margin-bottom: 3px; }
+.coach-welcome p { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.coach-hero-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; position: relative; overflow: hidden; }
+.coach-hero-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--dopamine), var(--oxytocin), var(--serotonin), var(--endorphin)); }
+.coach-hero-top { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+.coach-big-score { font-family: 'Instrument Serif', serif; font-size: 42px; font-weight: 400; line-height: 1; letter-spacing: -1px; }
+.coach-big-score span { font-size: 18px; color: var(--muted); }
+.coach-score-info strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.coach-score-info em { font-size: 12px; color: var(--muted); font-style: normal; line-height: 1.4; }
+.coach-cat-bars { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.coach-cat-bar-item { }
+.coach-cat-bar-label { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-bottom: 3px; }
+.coach-cat-bar-label span:last-child { font-weight: 600; }
+.coach-cat-bar-track { height: 3px; border-radius: 2px; background: var(--surface2); overflow: hidden; }
+.coach-cat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.5s cubic-bezier(.4,0,.2,1); width: 0%; }
+
+/* Share button on coach */
+.share-score-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface); color: var(--text); font-family: 'Geist', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; margin-bottom: 12px; }
+.share-score-btn:hover { background: var(--surface2); }
+
+/* Insight cards */
+.insight-cards { display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px; }
+.insight-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; display: flex; gap: 11px; align-items: flex-start; position: relative; overflow: hidden; }
+.insight-card::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 0 2px 2px 0; background: var(--ins-color, var(--muted)); }
+.insight-card.good::after { background: var(--serotonin); }
+.insight-icon { width: 30px; height: 30px; border-radius: 8px; background: var(--surface2); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+.insight-card.good .insight-icon { background: color-mix(in srgb, var(--serotonin) 14%, var(--surface2)); }
+.insight-text strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; line-height: 1.3; }
+.insight-text span { font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+/* Week dots */
+.week-section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px; margin-bottom: 14px; }
+.week-section h3 { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 9px; }
+.week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.week-cell { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.week-cell-day { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.4px; color: var(--muted); }
+.week-dot { width: 100%; aspect-ratio: 1; border-radius: 6px; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600; color: var(--muted); transition: all 0.3s; }
+.week-dot.today  { border-color: var(--border2); color: var(--text); }
+.week-dot.filled { background: color-mix(in srgb, var(--serotonin) 18%, var(--surface2)); color: var(--serotonin); border-color: color-mix(in srgb, var(--serotonin) 30%, transparent); }
+.week-dot.perfect { background: var(--serotonin); color: var(--bg); border-color: var(--serotonin); }
+.week-dot.future { opacity: 0.22; }
+
+.new-day-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border2); background: var(--surface2); color: var(--muted); font-family: 'Geist', sans-serif; font-size: 13px; cursor: pointer; transition: all 0.2s; }
+.new-day-btn:hover { color: var(--text); }
+
+/* ═══ GRADE SCREEN ════════════════════════════════════════════ */
+#screen-grade { overflow-y: auto; padding: 0; }
+.grade-back-bar { position: sticky; top: 0; z-index: 50; background: var(--surface); border-bottom: 1px solid var(--border); padding: calc(var(--safe-t) + 12px) 18px 12px; display: flex; align-items: center; gap: 10px; }
+.grade-back-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; font-family: 'Geist', sans-serif; font-size: 14px; font-weight: 500; color: var(--text); cursor: pointer; padding: 6px 0; transition: opacity 0.2s; }
+.grade-back-btn:hover { opacity: 0.7; }
+.grade-screen-title { font-family: 'Instrument Serif', serif; font-size: 15px; font-weight: 400; color: var(--muted); }
+.grade-screen-content { padding: 24px 20px 60px; }
+.grade-screen-content h2 { font-family: 'Instrument Serif', serif; font-size: 26px; font-weight: 400; margin-bottom: 6px; letter-spacing: -0.4px; }
+.grade-screen-content > p { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+.grade-row { display: flex; align-items: center; gap: 13px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 15px; margin-bottom: 7px; }
+.grade-letter { font-family: 'Instrument Serif', serif; font-size: 26px; font-weight: 400; width: 34px; text-align: center; flex-shrink: 0; }
+.grade-info strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.grade-info span { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.scoring-explainer { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 15px; margin-top: 18px; }
+.scoring-explainer h3 { font-size: 11px; font-weight: 600; margin-bottom: 9px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+.scoring-explainer p { font-size: 12.5px; color: var(--muted); line-height: 1.65; margin-bottom: 7px; }
+.scoring-explainer p:last-child { margin-bottom: 0; }
+
+/* ═══ PWA INSTALL BANNER ══════════════════════════════════════ */
+.install-banner { display: none; position: fixed; bottom: calc(var(--safe-b) + var(--nav-h) + 10px); left: 14px; right: 14px; z-index: 300; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px 13px; flex-direction: row; align-items: center; gap: 11px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: slideUp 0.25s cubic-bezier(.4,0,.2,1); }
+.install-banner.show { display: flex; }
+.install-banner-text { flex: 1; }
+.install-banner-text strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 1px; }
+.install-banner-text span { font-size: 11px; color: var(--muted); }
+.install-btn { padding: 8px 13px; border-radius: 8px; background: var(--coach); border: none; color: var(--text); font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+.install-dismiss { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; }
+
+/* ═══ RESPONSIVE ═════════════════════════════════════════════ */
+@media (min-width: 520px) {
+  .habit-list, .pips-row { padding-left: 20px; padding-right: 20px; }
+  .page-hero, .coach-page-inner { padding-left: 22px; padding-right: 22px; }
+  .commit-bar, .max-note { margin-left: 16px; margin-right: 16px; }
+}
+@media (min-width: 720px) {
+  .page-container, .coach-page-inner { max-width: 680px; margin-left: auto; margin-right: auto; }
+  .app-header, .bottom-nav { max-width: 680px; left: 50%; transform: translateX(-50%); border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen screen-active" id="screen-login">
+  <div class="login-logo">🧠</div>
+  <div class="login-title">NeuroHabit</div>
+  <!-- REVISION 1 -->
+  <div class="login-brand-sub">By The Aufthority</div>
+  <div class="login-sub">Track habits rooted in neuroscience.<br>Build a better brain, one day at a time.</div>
+  <div class="login-form">
+    <input class="login-input" type="email" id="loginEmail" placeholder="Email address" autocomplete="email">
+    <input class="login-input" type="password" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button class="btn-primary" onclick="handleLogin()">Sign In</button>
+    <div class="login-divider">or</div>
+    <button class="btn-secondary" onclick="handleSignup()">Create Account</button>
+  </div>
+  <div class="login-skip" onclick="skipLogin()">Continue without account →</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+     ══════════════════════════════════════════════════════════ -->
+<header class="app-header" id="appHeader" style="display:none">
+  <div class="header-brand">
+    <h1>NeuroHabit</h1>
+    <!-- REVISION 1 -->
+    <span class="header-brand-sub">By The Aufthority</span>
+    <span class="header-brand-date" id="headerDate"></span>
+  </div>
+  <div class="header-right">
+    <div class="streak-badge"><span>🔥</span><span id="streakNum">0</span></div>
+    <div class="score-pill" onclick="showScreen('screen-grade')">
+      <div class="score-ring-wrap">
+        <svg viewBox="0 0 34 34" width="34" height="34">
+          <defs>
+            <linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%"   stop-color="#c8712a"/>
+              <stop offset="50%"  stop-color="#b85070"/>
+              <stop offset="100%" stop-color="#5a82c0"/>
+            </linearGradient>
+          </defs>
+          <circle class="ring-track" cx="17" cy="17" r="14"/>
+          <circle class="ring-fill" id="ringFill" cx="17" cy="17" r="14"
+            stroke="url(#rg)" stroke-dasharray="87.96" stroke-dashoffset="87.96"/>
+        </svg>
+        <div class="score-ring-num" id="ringNum">0%</div>
+      </div>
+      <div class="score-pill-info">
+        <div class="val" id="headerScoreVal">0%</div>
+        <div class="lbl">Hero Score</div>
+      </div>
+    </div>
+    <div class="grade-chip" id="gradeChip" onclick="showScreen('screen-grade')">—</div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════════════════════
+     MAIN APP SCREEN
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-app" style="display:none">
+  <div class="page-container">
+
+    <!-- COACH PAGE -->
+    <div class="page page-active" id="page-coach">
+      <div class="coach-page-inner">
+        <div class="coach-welcome">
+          <h2 id="coachGreeting">Good morning 🧠</h2>
+          <p>Your neuroscience-based performance snapshot.</p>
+        </div>
+        <div class="coach-hero-card">
+          <div class="coach-hero-top">
+            <div class="coach-big-score" id="coachBigScore">0<span>%</span></div>
+            <div class="coach-score-info">
+              <strong id="coachScoreTitle">Start your day</strong>
+              <em id="coachScoreSub">Complete habits to activate your neurochemistry.</em>
+            </div>
+          </div>
+          <div class="coach-cat-bars" id="coachCatBars"></div>
+        </div>
+        <!-- REVISION 6: Share button -->
+        <button class="share-score-btn" onclick="openShareModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Share Today's Score
+        </button>
+        <div class="insight-cards" id="insightCards"></div>
+        <div class="week-section">
+          <h3>This Week</h3>
+          <div class="week-grid" id="weekGrid"></div>
+        </div>
+        <button class="new-day-btn" onclick="confirmNewDay()">🌅 New Day — Reset Today</button>
+      </div>
+    </div>
+
+    <!-- DOPAMINE PAGE -->
+    <div class="page" id="page-dopamine">
+      <div class="page-hero" style="--ac:var(--dopamine)">
+        <div class="page-hero-top"><div class="accent-dot" style="background:var(--dopamine)"></div><h2>Dopamine</h2></div>
+        <p>Drive, motivation & reward pathway.</p>
+        <div class="cat-gauge">
+          <div class="cat-gauge-track">
+            <div class="cat-gauge-raw"  id="gr-dopamine" style="--ac:var(--dopamine)"></div>
+            <div class="cat-gauge-fill" id="gf-dopamine" style="--ac:var(--dopamine)"></div>
+            <div class="cat-gauge-marker" id="gm-dopamine" style="--ac:var(--dopamine)"></div>
+          </div>
+          <div class="cat-gauge-meta">
+            <div class="cat-gauge-label" id="gl-dopamine" style="color:var(--dopamine)">0%</div>
+            <div class="cap-badge" id="cb-dopamine" style="--ac:var(--dopamine)">🔒 Capped at 50%</div>
+          </div>
+        </div>
+      </div>
+      <div class="pips-row" id="pips-dopamine" style="--ac:var(--dopamine)"></div>
+      <div class="max-note" id="mn-dopamine">✅ Dopamine maxed out!</div>
+      <div class="commit-bar" id="commitbar-dopamine" style="--ac:var(--dopamine)">
+        <div class="commit-bar-text">
+          <strong>Commit your Dopamine habits</strong>
+          <span>Lock in your choices for accountability.</span>
+          <div class="commit-timer" id="committimer-dopamine"></div>
+        </div>
+        <button class="commit-edit-btn hidden" id="commiteditn-dopamine" onclick="editCommit('dopamine')">Edit</button>
+        <button class="commit-btn" id="commitbtn-dopamine" onclick="commitSection('dopamine')">Commit</button>
+      </div>
+      <div class="habit-list" id="list-dopamine"></div>
+    </div>
+
+    <!-- SEROTONIN PAGE -->
+    <div class="page" id="page-serotonin">
+      <div class="page-hero" style="--ac:var(--serotonin)">
+        <div class="page-hero-top"><div class="accent-dot" style="background:var(--serotonin)"></div><h2>Serotonin</h2></div>
+        <p>Mood stability, regulation & balance.</p>
+        <div class="cat-gauge">
+          <div class="cat-gauge-track">
+            <div class="cat-gauge-raw"  id="gr-serotonin" style="--ac:var(--serotonin)"></div>
+            <div class="cat-gauge-fill" id="gf-serotonin" style="--ac:var(--serotonin)"></div>
+            <div class="cat-gauge-marker" id="gm-serotonin" style="--ac:var(--serotonin)"></div>
+          </div>
+          <div class="cat-gauge-meta">
+            <div class="cat-gauge-label" id="gl-serotonin" style="color:var(--serotonin)">0%</div>
+            <div class="cap-badge" id="cb-serotonin" style="--ac:var(--serotonin)">🔒 Capped at 50%</div>
+          </div>
+        </div>
+      </div>
+      <div class="pips-row" id="pips-serotonin" style="--ac:var(--serotonin)"></div>
+      <div class="max-note" id="mn-serotonin">✅ Serotonin maxed out!</div>
+      <div class="commit-bar" id="commitbar-serotonin" style="--ac:var(--serotonin)">
+        <div class="commit-bar-text">
+          <strong>Commit your Serotonin habits</strong>
+          <span>Lock in your choices for accountability.</span>
+          <div class="commit-timer" id="committimer-serotonin"></div>
+        </div>
+        <button class="commit-edit-btn hidden" id="commiteditn-serotonin" onclick="editCommit('serotonin')">Edit</button>
+        <button class="commit-btn" id="commitbtn-serotonin" onclick="commitSection('serotonin')">Commit</button>
+      </div>
+      <div class="habit-list" id="list-serotonin"></div>
+    </div>
+
+    <!-- OXYTOCIN PAGE -->
+    <div class="page" id="page-oxytocin">
+      <div class="page-hero" style="--ac:var(--oxytocin)">
+        <div class="page-hero-top"><div class="accent-dot" style="background:var(--oxytocin)"></div><h2>Oxytocin</h2></div>
+        <p>Connection, trust & social bonding.</p>
+        <div class="cat-gauge">
+          <div class="cat-gauge-track">
+            <div class="cat-gauge-raw"  id="gr-oxytocin" style="--ac:var(--oxytocin)"></div>
+            <div class="cat-gauge-fill" id="gf-oxytocin" style="--ac:var(--oxytocin)"></div>
+            <div class="cat-gauge-marker" id="gm-oxytocin" style="--ac:var(--oxytocin)"></div>
+          </div>
+          <div class="cat-gauge-meta">
+            <div class="cat-gauge-label" id="gl-oxytocin" style="color:var(--oxytocin)">0%</div>
+            <div class="cap-badge" id="cb-oxytocin" style="--ac:var(--oxytocin)">🔒 Capped at 50%</div>
+          </div>
+        </div>
+      </div>
+      <div class="pips-row" id="pips-oxytocin" style="--ac:var(--oxytocin)"></div>
+      <div class="max-note" id="mn-oxytocin">✅ Oxytocin maxed out!</div>
+      <div class="commit-bar" id="commitbar-oxytocin" style="--ac:var(--oxytocin)">
+        <div class="commit-bar-text">
+          <strong>Commit your Oxytocin habits</strong>
+          <span>Lock in your choices for accountability.</span>
+          <div class="commit-timer" id="committimer-oxytocin"></div>
+        </div>
+        <button class="commit-edit-btn hidden" id="commiteditn-oxytocin" onclick="editCommit('oxytocin')">Edit</button>
+        <button class="commit-btn" id="commitbtn-oxytocin" onclick="commitSection('oxytocin')">Commit</button>
+      </div>
+      <div class="habit-list" id="list-oxytocin"></div>
+    </div>
+
+    <!-- ENDORPHIN PAGE -->
+    <div class="page" id="page-endorphin">
+      <div class="page-hero" style="--ac:var(--endorphin)">
+        <div class="page-hero-top"><div class="accent-dot" style="background:var(--endorphin)"></div><h2>Endorphin</h2></div>
+        <p>Movement, stress relief & recovery.</p>
+        <div class="cat-gauge">
+          <div class="cat-gauge-track">
+            <div class="cat-gauge-raw"  id="gr-endorphin" style="--ac:var(--endorphin)"></div>
+            <div class="cat-gauge-fill" id="gf-endorphin" style="--ac:var(--endorphin)"></div>
+            <div class="cat-gauge-marker" id="gm-endorphin" style="--ac:var(--endorphin)"></div>
+          </div>
+          <div class="cat-gauge-meta">
+            <div class="cat-gauge-label" id="gl-endorphin" style="color:var(--endorphin)">0%</div>
+            <div class="cap-badge" id="cb-endorphin" style="--ac:var(--endorphin)">🔒 Capped at 50%</div>
+          </div>
+        </div>
+      </div>
+      <div class="pips-row" id="pips-endorphin" style="--ac:var(--endorphin)"></div>
+      <div class="max-note" id="mn-endorphin">✅ Endorphin maxed out!</div>
+      <div class="commit-bar" id="commitbar-endorphin" style="--ac:var(--endorphin)">
+        <div class="commit-bar-text">
+          <strong>Commit your Endorphin habits</strong>
+          <span>Lock in your choices for accountability.</span>
+          <div class="commit-timer" id="committimer-endorphin"></div>
+        </div>
+        <button class="commit-edit-btn hidden" id="commiteditn-endorphin" onclick="editCommit('endorphin')">Edit</button>
+        <button class="commit-btn" id="commitbtn-endorphin" onclick="commitSection('endorphin')">Commit</button>
+      </div>
+      <div class="habit-list" id="list-endorphin"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     GRADE SCREEN
+     ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-grade" style="display:none">
+  <div class="grade-back-bar">
+    <button class="grade-back-btn" onclick="hideScreen('screen-grade')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      Back
+    </button>
+    <span class="grade-screen-title">How You're Graded</span>
+  </div>
+  <div class="grade-screen-content">
+    <h2>How You're Graded</h2>
+    <p>Your Hero Score is the average of all four category percentages. Foundational habits (⭐⭐⭐) gate the gauge — complete at least one to unlock above 50%.</p>
+    <div class="grade-row"><div class="grade-letter" style="color:#4a9e82">S</div><div class="grade-info"><strong>100% — Perfect Day</strong><span>All four neurochemicals fully activated.</span></div></div>
+    <div class="grade-row"><div class="grade-letter" style="color:#4a9e82">A</div><div class="grade-info"><strong>80–99% — Excellent</strong><span>Strong across the board. All foundational habits done.</span></div></div>
+    <div class="grade-row"><div class="grade-letter" style="color:#5a82c0">B</div><div class="grade-info"><strong>60–79% — Good</strong><span>Foundational habits complete in most categories.</span></div></div>
+    <div class="grade-row"><div class="grade-letter" style="color:#c8712a">C</div><div class="grade-info"><strong>40–59% — Okay</strong><span>Some habits done but foundational gaps remain.</span></div></div>
+    <div class="grade-row"><div class="grade-letter" style="color:#b85070">D</div><div class="grade-info"><strong>20–39% — Low</strong><span>Minimal habits completed. Pick one category and start.</span></div></div>
+    <div class="grade-row"><div class="grade-letter" style="color:#7a7469">—</div><div class="grade-info"><strong>0–19% — Not Started</strong><span>A new day waiting to be shaped.</span></div></div>
+    <div class="scoring-explainer">
+      <h3>Scoring Rules</h3>
+      <p><strong>Raw %</strong> = (completed habit weights ÷ total possible) × 100.</p>
+      <p><strong>Foundational Gate</strong>: Any single ⭐⭐⭐ habit unlocks the full gauge. Until then, gauge is capped at 50%.</p>
+      <p><strong>Serotonin exception</strong>: Has 3 foundational habits — completing ANY ONE of them unlocks the full gauge.</p>
+      <p><strong>Flex Mode</strong>: Long-press or tap Flex to reduce a habit's weight on harder days.</p>
+      <p><strong>Commit</strong>: Lock in your daily choices for accountability. You can edit once within 60 minutes.</p>
+      <p><strong>Hero Score</strong> = average of all four effective category percentages.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     BOTTOM NAV
+     ══════════════════════════════════════════════════════════ -->
+<nav class="bottom-nav" id="bottomNav" style="display:none">
+  <div class="nav-tabs">
+    <button class="nav-tab active" data-tab="coach"><span class="tab-icon">🧠</span><span class="tab-label">Coach</span><span class="tab-pip"></span></button>
+    <button class="nav-tab" data-tab="dopamine"><span class="tab-icon">⚡</span><span class="tab-label">Dopamine</span><span class="tab-pip"></span></button>
+    <button class="nav-tab" data-tab="serotonin"><span class="tab-icon">🌸</span><span class="tab-label">Serotonin</span><span class="tab-pip"></span></button>
+    <button class="nav-tab" data-tab="oxytocin"><span class="tab-icon">🤝</span><span class="tab-label">Oxytocin</span><span class="tab-pip"></span></button>
+    <button class="nav-tab" data-tab="endorphin"><span class="tab-icon">🏃</span><span class="tab-label">Endorphin</span><span class="tab-pip"></span></button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODALS
+     ══════════════════════════════════════════════════════════ -->
+
+<!-- Neuro tooltip (long-press) -->
+<div class="modal-overlay" id="tooltipOverlay" onclick="closeModal('tooltipOverlay')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-icon" id="tooltipIcon">⚡</div>
+      <div class="modal-title" id="tooltipTitle">Habit Insight</div>
+    </div>
+    <div class="modal-body" id="tooltipBody"></div>
+    <button class="modal-close" onclick="closeModal('tooltipOverlay')">Got it</button>
+  </div>
+</div>
+
+<!-- REVISION 4: Habit info modal -->
+<div class="modal-overlay" id="infoOverlay" onclick="closeModal('infoOverlay')">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-icon" id="infoIcon">ℹ️</div>
+      <div class="modal-title" id="infoTitle">Habit Info</div>
+    </div>
+    <div class="modal-body" id="infoBody"></div>
+    <div class="habit-examples" id="infoExamples"></div>
+    <button class="modal-close" onclick="closeModal('infoOverlay')">Close</button>
+  </div>
+</div>
+
+<!-- REVISION 6: Share modal -->
+<div class="modal-overlay" id="shareOverlay" onclick="closeModal('shareOverlay')">
+  <div class="modal-card" onclick="event.stopPropagation()" style="max-width:440px">
+    <div class="modal-handle"></div>
+    <div class="share-card-inner" id="shareCardInner">
+      <div class="share-card-top">
+        <div class="share-card-brand">NeuroHabit <span>By The Aufthority</span></div>
+        <div class="share-card-date" id="shareDate"></div>
+      </div>
+      <div class="share-hero-score">
+        <div class="share-hero-num" id="shareScoreNum">0</div>
+        <div class="share-hero-pct">%</div>
+      </div>
+      <div class="share-grade" id="shareGrade"></div>
+      <!-- Brain Balance -->
+      <div class="brain-balance">
+        <div class="brain-balance-label">Brain Balance</div>
+        <div class="brain-balance-bars" id="brainBars"></div>
+        <div class="brain-balance-feedback" id="brainFeedback"></div>
+      </div>
+      <div class="share-cats" id="shareCats"></div>
+      <div class="share-tagline">neurohabit.app · by The Aufthority</div>
+    </div>
+    <div class="share-actions">
+      <button class="share-action-btn" onclick="generateShareImage()">🖼 Save as Image</button>
+      <button class="share-action-btn primary" onclick="nativeShare()">⬆ Share</button>
+    </div>
+  </div>
+</div>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-banner-text"><strong>Install NeuroHabit</strong><span>Add to home screen for offline access</span></div>
+  <button class="install-btn" onclick="triggerInstall()">Install</button>
+  <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+     ══════════════════════════════════════════════════════════ -->
+<script>
+/* ═══════════════════════════════════════════════════════════
+   HABIT REGISTRY
+   ── REVISION 2: Serotonin label update + OR-gate flag
+   ── REVISION 3: Social Laughter weight → 2
+   ── REVISION 4: Each habit has info: { body, examples[] }
+   ═══════════════════════════════════════════════════════════ */
+const HABITS = {
+  dopamine: {
+    color: '#c8712a',
+    /* gate: 'all' = ALL foundational needed (default) */
+    gate: 'all',
+    habits: [
+      {
+        label: 'Deep Work / Main Goal',
+        weight: 3, foundational: true, type: 'foundational',
+        /* Multi-session flex: cycle through session tiers */
+        flex: { multiSession: true, tiers: [
+          { label: 'Deep Work — 1 session (45 min)',   weight: 1, sessions: 1 },
+          { label: 'Deep Work — 3+ sessions (2+ hrs)', weight: 2, sessions: 3 },
+          { label: 'Deep Work — 5+ sessions (4+ hrs)', weight: 3, sessions: 5 },
+        ]},
+        info: { body: 'Dedicated, distraction-free work on your most important goal. Track sessions of 45+ minutes each — each session is a complete deep work block.', examples: ['1 session (45 min) = ⭐ — getting focused work done', '3+ sessions (2+ hrs total) = ⭐⭐ — a strong productive day', '5+ sessions (4+ hrs total) = ⭐⭐⭐ — elite deep work output'] },
+        tooltip: { icon: '⚡', title: 'Deep Work activates Dopamine', body: 'Sustained focused effort on a meaningful goal is the strongest natural dopamine trigger. More sessions compound the reward signal.' }
+      },
+      {
+        label: 'Morning Sunlight (10–15 min)',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Direct outdoor light exposure within 60 minutes of waking — no sunglasses, no glass in the way.', examples: ['Walking outside barefoot or on a balcony', 'Eating breakfast on a patio or near an open window', 'A short walk to a coffee shop without sunglasses'] },
+        tooltip: { icon: '🌅', title: 'Sunlight primes Dopamine', body: 'Morning light increases dopamine receptor sensitivity — setting the motivational tone for the entire day. Do this within 30–60 mins of waking.' }
+      },
+      {
+        label: 'Task List Completion (Admin/To-dos)',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Clearing short, planned tasks from your list — emails, admin, errands — that create mental "open loops" if left undone.', examples: ['Replying to all pending emails', 'Paying a bill or filing a form', 'Scheduling next week\'s appointments'] },
+        tooltip: { icon: '✅', title: 'Checkmarks trigger Dopamine', body: 'Each completed task releases a small dopamine hit. Breaking big goals into smaller tasks creates a cascade of micro-rewards that build momentum.' }
+      },
+      {
+        label: 'Active Skill Practice (20+ min)',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'Deliberate practice of a skill you are actively trying to improve — not passive consumption, but active doing.', examples: ['Practising an instrument or sport drill', 'Writing, drawing, or coding for improvement', 'Language learning with active speaking/writing'] },
+        tooltip: { icon: '🎯', title: 'Learning grows your reward system', body: 'Skill acquisition activates dopaminergic pathways. Each "aha" moment signals progress — one of the most potent natural dopamine triggers.' }
+      },
+      {
+        label: 'Goal-Focused Journaling',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'Writing specifically about your goals, priorities, or progress — not general diary writing.', examples: ['Reviewing your 3 priorities for the day', 'Reflecting on what worked and why', 'Writing out a problem you\'re trying to solve'] },
+        tooltip: { icon: '📓', title: 'Journaling clarifies the reward target', body: 'Writing goals activates the prefrontal cortex and reinforces your brain\'s directional focus, increasing anticipatory dopamine.' }
+      },
+    ]
+  },
+
+  serotonin: {
+    color: '#4a9e82',
+    /* REVISION 2: gate 'any' = ANY ONE foundational habit unlocks cap */
+    gate: 'any',
+    habits: [
+      {
+        label: 'Solat 5 Waktu / Daily Prayer',  /* REVISION 2 */
+        weight: 3, foundational: true, type: 'foundational',
+        flex: null,
+        info: { body: 'Completing all five obligatory prayers (or your own structured daily prayer practice) on time throughout the day.', examples: ['Solat Fajr, Dhuhr, Asar, Maghrib, Isyak', 'Morning, midday, afternoon, evening, and night prayer', 'Any structured devotional prayer practice done 5 times'] },
+        tooltip: { icon: '🕌', title: 'Prayer stabilises Serotonin', body: 'Structured prayer combines breathwork, body movement, rhythmic repetition, and gratitude — all independently proven to upregulate serotonin and support circadian rhythm.' }
+      },
+      {
+        label: 'Sleep Duration (7–9 hrs)',
+        weight: 3, foundational: true, type: 'foundational',
+        flex: { label: 'Restful <7 hrs (Flex)', weight: 2 },
+        info: { body: 'A full night of uninterrupted sleep lasting 7 to 9 hours, waking feeling genuinely rested.', examples: ['In bed by 10:30pm, up at 6:30am', 'No phone after 10pm + dark room + fan/white noise', 'Napping is not a substitute — night sleep is what counts'] },
+        tooltip: { icon: '😴', title: 'Sleep is the master regulator', body: 'During deep sleep, tryptophan converts to serotonin and melatonin. Chronic sleep deprivation depletes serotonin reserves faster than anything else.' }
+      },
+      {
+        label: '5-a-Day (3 Veg + 2 Fruit)',
+        weight: 3, foundational: true, type: 'foundational',
+        flex: { label: '5-a-Day Partial (Flex)', weight: 1 },
+        info: { body: 'Eating at least 3 servings of vegetables and 2 servings of fruit throughout the day — whole food, not juice.', examples: ['Salad + stir-fry veg + side of fruit at lunch', 'Spinach at breakfast, broccoli at lunch, banana + berries as snacks', 'A smoothie counts only if it uses whole blended fruit/veg'] },
+        tooltip: { icon: '🥦', title: 'Gut-brain axis & Serotonin', body: '95% of serotonin is produced in the gut. Fibre-rich vegetables feed gut bacteria that synthesise serotonin precursors.' }
+      },
+      {
+        label: 'Nature Walk / Vitamin D (20+ min)',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'An outdoor walk in a natural or semi-natural environment for at least 20 minutes — not treadmill, not indoors.', examples: ['A park walk or trail during lunch break', 'Morning walk around a green neighbourhood', 'Beach or riverside walk without headphones'] },
+        tooltip: { icon: '🌿', title: 'Nature walks boost Serotonin', body: 'Outdoor walking combines three powerful serotonin activators: sunlight, rhythmic movement, and exposure to natural environments.' }
+      },
+      {
+        label: '3 Protein-Rich Meals',
+        weight: 2, foundational: false, type: 'secondary',
+        flex: { label: '≤2 Protein Meals (Flex)', weight: 1 },
+        info: { body: 'Three separate meals across the day that each contain a meaningful protein source — not just protein snacks.', examples: ['Eggs at breakfast, chicken at lunch, fish at dinner', 'Greek yoghurt + tofu + beef / legumes across 3 meals', 'Each meal should have at least 20g of protein'] },
+        tooltip: { icon: '🥩', title: 'Protein provides tryptophan', body: 'Serotonin is synthesised from tryptophan — an amino acid found only in protein. Without it, your brain lacks the raw material to make serotonin.' }
+      },
+      {
+        label: 'Gratitude / Muhasabah',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'A brief, intentional practice of listing or reflecting on specific things you are genuinely grateful for.', examples: ['Writing 3 specific things you\'re thankful for today', 'Reflecting during prayer or quiet time on blessings', 'Telling someone something you appreciate about them'] },
+        tooltip: { icon: '🤲', title: 'Gratitude elevates Serotonin', body: 'Consciously recalling positive experiences increases serotonin production and rewires neural pathways toward a positive baseline mood.' }
+      },
+      {
+        label: 'Breathwork / Meditation / Dhikr',
+        weight: 1, foundational: false, type: 'bonus',
+        /* Multi-session flex: more sessions = more weight */
+        flex: { multiSession: true, tiers: [
+          { label: 'Mindfulness — 1 session (5+ min)',  weight: 1, sessions: 1 },
+          { label: 'Mindfulness — 3+ sessions',         weight: 2, sessions: 3 },
+          { label: 'Mindfulness — 5+ sessions',         weight: 3, sessions: 5 },
+        ]},
+        info: { body: 'Any intentional practice of breathwork, meditation, dhikr (remembrance of Allah), or contemplative prayer. Single sessions of 5+ minutes count — more sessions throughout the day earn higher weight. Dhikr (subhanallah, alhamdulillah, tasbih) and silent meditation are equally valid.', examples: ['1 session: 5-min box breathing or morning dhikr — ⭐', '3 sessions: breathwork + midday dhikr + night reflection — ⭐⭐', '5 sessions: structured dhikr after each solat — ⭐⭐⭐ (includes solat sunat intention)'] },
+        tooltip: { icon: '🧘', title: 'Mindfulness & Dhikr calm the nervous system', body: 'Breathwork activates the parasympathetic nervous system and reduces cortisol. Dhikr adds a layer of spiritual grounding — both upregulate serotonin through rhythmic, repetitive calming practice.' }
+      },
+    ]
+  },
+
+  oxytocin: {
+    color: '#b85070',
+    gate: 'all',
+    habits: [
+      {
+        label: 'Active Socialising (20+ min)',
+        weight: 3, foundational: true, type: 'foundational', flex: null,
+        info: { body: 'A real, focused in-person or voice conversation lasting at least 20 minutes — phone in pocket, full presence.', examples: ['Lunch with a friend or colleague without phones', 'A genuine catch-up call (voice, not texting)', 'Family dinner with real conversation, no screens'] },
+        tooltip: { icon: '🤝', title: 'Face-to-face is irreplaceable', body: 'In-person social interaction is the gold standard for oxytocin release. Eye contact, body language, and vocal tone trigger oxytocin in ways digital communication cannot replicate.' }
+      },
+      {
+        label: 'Sincere Appreciation (Express to someone)',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Telling someone — clearly and specifically — what you appreciate about them. It must be genuine, not formulaic.', examples: ['Thanking a colleague for their specific help today', 'Texting a friend to say what they mean to you', 'Expressing gratitude to a family member directly'] },
+        tooltip: { icon: '💛', title: 'Appreciation is a bonding signal', body: 'Genuine appreciation activates oxytocin in both giver and receiver. Sincerity creates stronger neurochemical responses than generic praise.' }
+      },
+      {
+        label: 'Oxytocin Anchor (Hug / Pet >20s)',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Physical touch that lasts long enough to trigger oxytocin — at least 20 seconds of genuine, non-rushed contact.', examples: ['A long hug with a family member or partner', 'Petting or stroking an animal for 20+ seconds', 'A hand on the shoulder during a difficult conversation'] },
+        tooltip: { icon: '🫂', title: 'Physical touch is the fastest route', body: 'A hug lasting more than 20 seconds triggers a significant oxytocin surge. Physical touch — with people or animals — is one of the fastest ways to activate the bonding system.' }
+      },
+      {
+        label: 'Community Help / Act of Kindness',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'Doing something for someone without expecting anything in return — it must be voluntary and without obligation.', examples: ['Helping a neighbour carry something', 'Paying for someone\'s coffee anonymously', 'Volunteering time at a community event or mosque'] },
+        tooltip: { icon: '🌱', title: 'Giving is neurologically rewarding', body: 'Acts of genuine kindness trigger oxytocin release. The "helper\'s high" is real — prosocial behaviour is one of the most sustainable sources of wellbeing.' }
+      },
+      {
+        label: 'Virtual Social Check-In',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'A meaningful digital connection — video or voice preferred — that genuinely maintains a social bond.', examples: ['A voice note to someone you haven\'t spoken to in a while', 'A video call with a long-distance friend or family member', 'Sending a personal (non-generic) message to someone you care about'] },
+        tooltip: { icon: '📱', title: 'Even digital connection counts', body: 'Meaningful virtual connection — especially voice and video — still activates oxytocin pathways and maintains social bonds when physical presence isn\'t possible.' }
+      },
+    ]
+  },
+
+  endorphin: {
+    color: '#5a82c0',
+    gate: 'all',
+    habits: [
+      {
+        label: 'Exercise / High Movement (30+ min)',
+        weight: 3, foundational: true, type: 'foundational',
+        flex: { label: 'Micro-movement Session (Flex)', weight: 1 },
+        info: { body: 'Sustained moderate-to-high intensity physical activity lasting at least 30 minutes — enough to raise heart rate and induce some breathlessness.', examples: ['Running, cycling, or swimming for 30+ min', 'HIIT session, CrossFit, or gym weights', 'Brisk walking uphill or a martial arts class'] },
+        tooltip: { icon: '🏃', title: 'Exercise is the endorphin king', body: 'Sustained exercise triggers the largest natural endorphin release. The "runner\'s high" is a real neurochemical event that also reduces cortisol and inflammation.' }
+      },
+      {
+        label: 'Cold Shower / Contrast Therapy',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Deliberate cold water exposure — at minimum a cold shower, ideally ending on cold after a hot shower.', examples: ['2-minute cold shower at the end of your normal shower', 'Alternating hot and cold in 1-min intervals (3 rounds)', 'Cold plunge or outdoor swim in cool water'] },
+        tooltip: { icon: '🚿', title: 'Cold triggers an endorphin spike', body: 'Cold water immersion floods the system with noradrenaline and endorphins. Within minutes of getting out, you feel calmer, sharper, and more resilient.' }
+      },
+      {
+        label: 'Creative Play / Dancing',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Physical creative expression — dancing, movement arts, or active play — that combines joy with motion.', examples: ['Dancing to music for 10+ minutes', 'Improv or drama class', 'Playing a physically active game with children or friends'] },
+        tooltip: { icon: '💃', title: 'Dance triggers multiple pathways', body: 'Dancing combines rhythmic movement, social bonding, music, and creativity — each independently triggering endorphin and dopamine release.' }
+      },
+      {
+        /* REVISION 3: weight changed from 1 → 2, type secondary */
+        label: 'Social Laughter / Humor',
+        weight: 2, foundational: false, type: 'secondary', flex: null,
+        info: { body: 'Genuine, sustained laughter shared with another person — not scrolling memes alone, but real social humor.', examples: ['Watching a comedy with friends and genuinely laughing', 'A funny conversation or banter with colleagues', 'Playing a silly game or watching stand-up together'] },
+        tooltip: { icon: '😂', title: 'Laughter is real medicine', body: 'Genuine shared laughter triggers significant endorphin release. Studies show it raises pain thresholds, reduces cortisol, and strengthens immune function.' }
+      },
+      {
+        label: 'Mobility / Stretching Routine',
+        weight: 1, foundational: false, type: 'bonus', flex: null,
+        info: { body: 'A dedicated stretching, yoga, or mobility session — not just a quick stretch after sitting.', examples: ['10-min morning yoga or sun salutation', 'Post-workout static stretching (hold 30s each)', 'Foam rolling + hip flexor and hamstring work'] },
+        tooltip: { icon: '🧘', title: 'Stretching releases tension and endorphins', body: 'Deliberate stretching triggers mild endorphin release while activating the parasympathetic nervous system — effective at reducing physical stress stored in muscles.' }
+      },
+    ]
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   STORAGE & STATE
+   ═══════════════════════════════════════════════════════════ */
+const SK  = 'nh_pwa_state';
+const STK = 'nh_pwa_streak';
+const WK  = 'nh_pwa_week';
+const UK  = 'nh_pwa_user';
+const CK  = 'nh_pwa_commits'; /* REVISION 5: commit state */
+
+const ld = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const sv = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+let appState  = ld(SK)  || {};
+let streak    = ld(STK) || { count: 0, lastDate: null };
+let weekData  = ld(WK)  || {};
+let userData  = ld(UK)  || { name: null, skipAuth: false };
+let commitData= ld(CK)  || {}; /* { dopamine: { ts: timestamp }, ... } */
+
+const today = new Date().toISOString().slice(0, 10);
+if (!appState[today])   appState[today]   = {};
+if (!commitData[today]) commitData[today] = {};
+
+/* ═══════════════════════════════════════════════════════════
+   SCORING ENGINE
+   ── REVISION 2: foundationDone uses category gate type
+   ── REVISION 3: Social Laughter weight now 2 in HABITS obj
+   ═══════════════════════════════════════════════════════════ */
+
+function habitWeight(type, i) {
+  const h = HABITS[type].habits[i];
+  if (h.flex?.multiSession) {
+    const tierKey = `${type}_${i}_tier`;
+    const tierIdx = appState[today][tierKey] || 0;
+    // If a tier is selected, use that tier's weight
+    if (tierIdx > 0) return h.flex.tiers[tierIdx - 1].weight;
+    // No tier selected: base weight (habit counts at ⭐1 if manually ticked)
+    return 1;
+  }
+  const flexKey = `${type}_${i}_flex`;
+  if (h.flex && appState[today][flexKey]) return h.flex.weight;
+  return h.weight;
+}
+
+function catMaxPts(type) {
+  return HABITS[type].habits.reduce((s, h, i) => {
+    // For multi-session habits, max possible = highest tier weight
+    if (h.flex?.multiSession) {
+      const maxTierWeight = h.flex.tiers[h.flex.tiers.length - 1].weight;
+      return s + maxTierWeight;
+    }
+    return s + habitWeight(type, i);
+  }, 0);
+}
+
+function catRawPts(type) {
+  return HABITS[type].habits.reduce((s, h, i) =>
+    s + (appState[today][`${type}_${i}`] ? habitWeight(type, i) : 0), 0);
+}
+
+/**
+ * REVISION 2: Serotonin uses 'any' gate — ANY foundational unlocks cap.
+ * All other categories use 'all' — ALL foundationals must be done.
+ */
+function foundationDone(type) {
+  const gate = HABITS[type].gate || 'all';
+  const fdns = HABITS[type].habits
+    .map((h, i) => ({ h, i }))
+    .filter(({ h }) => h.foundational);
+
+  if (gate === 'any') {
+    // At least ONE foundational done
+    return fdns.some(({ h, i }) => !!appState[today][`${type}_${i}`]);
+  }
+  // 'all': every foundational done
+  return fdns.every(({ h, i }) => !!appState[today][`${type}_${i}`]);
+}
+
+function catEffectivePct(type) {
+  const max = catMaxPts(type);
+  if (max === 0) return 0;
+  const rawPct = (catRawPts(type) / max) * 100;
+  return foundationDone(type) ? Math.min(rawPct, 100) : Math.min(rawPct, 50);
+}
+
+function catRawPct(type) {
+  const max = catMaxPts(type);
+  return max === 0 ? 0 : Math.min((catRawPts(type) / max) * 100, 100);
+}
+
+function heroScore() {
+  const types = Object.keys(HABITS);
+  return types.reduce((s, t) => s + catEffectivePct(t), 0) / types.length;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER: HABIT LIST
+   Handles both classic flex (boolean) and multiSession flex (tier)
+   ═══════════════════════════════════════════════════════════ */
+function renderSection(type) {
+  const list     = document.getElementById(`list-${type}`);
+  const isLocked = isSectionLocked(type);
+  list.innerHTML = '';
+  list.classList.toggle('section-locked', isLocked);
+
+  HABITS[type].habits.forEach((h, i) => {
+    const key      = `${type}_${i}`;
+    const flexKey  = `${type}_${i}_flex`;
+    const tierKey  = `${type}_${i}_tier`;
+    const isDone   = !!appState[today][key];
+    const isMulti  = !!(h.flex?.multiSession);
+    const tierIdx  = isMulti ? (appState[today][tierKey] || 0) : 0;
+    const isFlex   = isMulti ? tierIdx > 0 : (h.flex && !!appState[today][flexKey]);
+    const w        = habitWeight(type, i);
+    const typeMap  = { foundational: 'Foundational', secondary: 'Secondary', bonus: 'Bonus' };
+    const stars    = '⭐'.repeat(Math.max(1, Math.min(3, w)));
+
+    // For multi-session: derive display label from active tier
+    let displayLabel = h.label;
+    if (isMulti && tierIdx > 0) displayLabel = h.flex.tiers[tierIdx - 1].label;
+
+    // Multi-session flex button label
+    let flexBtnLabel = '';
+    if (isMulti) {
+      const nextTier = tierIdx < h.flex.tiers.length ? h.flex.tiers[tierIdx] : null;
+      if (tierIdx === 0) flexBtnLabel = `Sessions: —`;
+      else flexBtnLabel = `${h.flex.tiers[tierIdx - 1].sessions}+ sessions`;
+    }
+
+    const row = document.createElement('div');
+    row.className = [
+      'habit-row',
+      h.foundational ? 'foundational' : '',
+      isDone ? 'done' : '',
+      isFlex ? 'flex-active' : ''
+    ].filter(Boolean).join(' ');
+    row.style.setProperty('--ac', `var(--${type})`);
+
+    // Build flex control HTML
+    let flexCtrlHTML = '';
+    if (!isLocked) {
+      if (isMulti) {
+        // Session tier cycler: shows current tier and arrows to cycle
+        const tierLabel = tierIdx === 0
+          ? 'Set sessions'
+          : `${h.flex.tiers[tierIdx-1].sessions}+ sessions`;
+        flexCtrlHTML = `
+          <div class="session-flex-ctrl">
+            <button class="session-tier-btn" data-dir="-1" title="Fewer sessions">‹</button>
+            <span class="session-tier-label">${tierLabel}</span>
+            <button class="session-tier-btn" data-dir="1" title="More sessions">›</button>
+          </div>`;
+      } else if (h.flex) {
+        flexCtrlHTML = `<button class="flex-toggle-btn ${isFlex ? 'active' : ''}">Flex ${isFlex ? 'ON' : 'OFF'}</button>`;
+      }
+    }
+
+    row.innerHTML = `
+      <div class="habit-check">
+        <svg width="11" height="9" viewBox="0 0 12 10" fill="none">
+          <path d="M1 5l3.5 3.5L11 1" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="habit-body">
+        <span class="habit-label">${displayLabel}</span>
+        <div class="habit-meta">
+          <span class="habit-type-tag">${typeMap[h.type]}</span>
+          ${isFlex ? `<span class="flex-tag show">${isMulti ? 'SESSIONS' : 'FLEX'}</span>` : ''}
+        </div>
+      </div>
+      <div class="habit-right">
+        <div style="display:flex;align-items:center;gap:5px;">
+          <div class="weight-badge">${stars} ${w}</div>
+          <button class="habit-info-btn" title="What counts as this habit?">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+          </button>
+        </div>
+        ${flexCtrlHTML}
+      </div>`;
+
+    if (!isLocked) {
+      // Tap to toggle done state
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('.habit-info-btn') ||
+            e.target.closest('.flex-toggle-btn') ||
+            e.target.closest('.session-flex-ctrl')) return;
+        toggleHabit(key, type, i);
+      });
+      // Long-press → neuro tooltip
+      let pressTimer;
+      row.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.habit-info-btn') ||
+            e.target.closest('.flex-toggle-btn') ||
+            e.target.closest('.session-flex-ctrl')) return;
+        pressTimer = setTimeout(() => showTooltip(h.tooltip), 500);
+      });
+      row.addEventListener('pointerup',    () => clearTimeout(pressTimer));
+      row.addEventListener('pointerleave', () => clearTimeout(pressTimer));
+
+      // Classic flex toggle
+      const flexBtn = row.querySelector('.flex-toggle-btn');
+      if (flexBtn) {
+        flexBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleFlex(flexKey, type, i);
+        });
+      }
+
+      // Multi-session tier cycler buttons
+      row.querySelectorAll('.session-tier-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const dir = parseInt(btn.dataset.dir);
+          cycleTier(tierKey, type, i, dir);
+        });
+      });
+    }
+
+    // Info button always clickable
+    const infoBtn = row.querySelector('.habit-info-btn');
+    infoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showHabitInfo(h);
+    });
+
+    list.appendChild(row);
+  });
+
+  updateCatUI(type);
+  updateCommitUI(type);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REVISION 4: HABIT INFO MODAL
+   ═══════════════════════════════════════════════════════════ */
+function showHabitInfo(h) {
+  document.getElementById('infoIcon').textContent = h.tooltip?.icon || 'ℹ️';
+  document.getElementById('infoTitle').textContent = h.label;
+  document.getElementById('infoBody').textContent  = h.info?.body || '';
+  const ex = document.getElementById('infoExamples');
+  if (h.info?.examples?.length) {
+    ex.innerHTML = `
+      <p>Examples</p>
+      <ul>${h.info.examples.map(e => `<li>${e}</li>`).join('')}</ul>`;
+    ex.style.display = 'block';
+  } else {
+    ex.style.display = 'none';
+  }
+  openModal('infoOverlay');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TOGGLE
+   ═══════════════════════════════════════════════════════════ */
+function toggleHabit(key, type, idx) {
+  if (isSectionLocked(type)) return;
+  appState[today][key] = !appState[today][key];
+  sv(SK, appState);
+  if (appState[today][key] && HABITS[type].habits[idx].foundational) {
+    haptic('heavy');
+    setTimeout(() => showTooltip(HABITS[type].habits[idx].tooltip), 150);
+  } else if (appState[today][key]) { haptic('light'); }
+  renderSection(type);
+  updateHeader();
+  renderCoach();
+  renderWeek();
+  checkStreak();
+  maybeCelebrate();
+}
+
+function toggleFlex(flexKey, type, idx) {
+  if (isSectionLocked(type)) return;
+  appState[today][flexKey] = !appState[today][flexKey];
+  sv(SK, appState);
+  haptic('medium');
+  renderSection(type);
+  updateHeader();
+  renderCoach();
+}
+
+/**
+ * cycleTier — advance or retreat through multi-session tiers.
+ * tierIdx 0 = no sessions set (habit still markable as done at base weight).
+ * tierIdx 1..N = tier 1..N active, weight = tiers[tierIdx-1].weight.
+ * Automatically marks habit as done when any tier is set.
+ */
+function cycleTier(tierKey, type, idx, dir) {
+  if (isSectionLocked(type)) return;
+  const h        = HABITS[type].habits[idx];
+  const maxTiers = h.flex.tiers.length;
+  const current  = appState[today][tierKey] || 0;
+  const next     = Math.max(0, Math.min(maxTiers, current + dir));
+  const key      = `${type}_${idx}`;
+
+  appState[today][tierKey] = next;
+  // Auto-complete habit when a tier is selected; un-complete when tier cleared to 0
+  appState[today][key] = next > 0;
+  sv(SK, appState);
+  haptic('light');
+  renderSection(type);
+  updateHeader();
+  renderCoach();
+  renderWeek();
+  checkStreak();
+  maybeCelebrate();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REVISION 5: COMMIT / LOCK SYSTEM
+   Rules:
+     - Commit locks the section for the rest of the day
+     - A one-time Edit is allowed within 60 minutes of committing
+     - After 60 min, the section is permanently locked for that day
+   ═══════════════════════════════════════════════════════════ */
+const EDIT_WINDOW_MS = 60 * 60 * 1000; // 60 minutes
+
+function isSectionLocked(type) {
+  const c = commitData[today][type];
+  if (!c) return false;
+  // If edit mode was granted and is still within window, not locked
+  if (c.editMode) {
+    const elapsed = Date.now() - c.ts;
+    if (elapsed < EDIT_WINDOW_MS) return false;
+    // Edit window expired — lock permanently
+    c.editMode = false;
+    sv(CK, commitData);
+    return true;
+  }
+  return true; // committed and not in edit mode
+}
+
+function commitSection(type) {
+  commitData[today][type] = { ts: Date.now(), editMode: false };
+  sv(CK, commitData);
+  haptic('heavy');
+  updateCommitUI(type);
+  renderSection(type); // re-render locked state
+}
+
+function editCommit(type) {
+  const c = commitData[today][type];
+  if (!c) return;
+  const elapsed = Date.now() - c.ts;
+  if (elapsed > EDIT_WINDOW_MS) {
+    alert('The 60-minute edit window has passed. This entry is now locked.');
+    return;
+  }
+  c.editMode = true;
+  sv(CK, commitData);
+  haptic('medium');
+  updateCommitUI(type);
+  renderSection(type);
+  // Auto-lock again when window expires
+  const remaining = EDIT_WINDOW_MS - elapsed;
+  setTimeout(() => {
+    if (commitData[today][type]?.editMode) {
+      commitData[today][type].editMode = false;
+      sv(CK, commitData);
+      renderSection(type);
+      updateCommitUI(type);
+    }
+  }, remaining);
+}
+
+function updateCommitUI(type) {
+  const c       = commitData[today][type];
+  const btn     = document.getElementById(`commitbtn-${type}`);
+  const editBtn = document.getElementById(`commiteditn-${type}`);
+  const timer   = document.getElementById(`committimer-${type}`);
+  const barText = document.querySelector(`#commitbar-${type} .commit-bar-text > span`);
+
+  if (!c) {
+    // Not committed yet
+    btn.textContent = 'Commit';
+    btn.classList.remove('committed');
+    editBtn.classList.add('hidden');
+    timer.classList.remove('show');
+    if (barText) barText.textContent = 'Lock in your choices for accountability.';
+    return;
+  }
+
+  const elapsed   = Date.now() - c.ts;
+  const remaining = EDIT_WINDOW_MS - elapsed;
+  const inWindow  = remaining > 0;
+
+  if (c.editMode && inWindow) {
+    // Currently in edit mode
+    btn.textContent = 'Re-commit';
+    btn.classList.remove('committed');
+    editBtn.classList.add('hidden');
+    const mins = Math.ceil(remaining / 60000);
+    timer.textContent = `Edit window closes in ${mins} min`;
+    timer.classList.add('show');
+    if (barText) barText.textContent = 'Make your changes, then re-commit.';
+  } else {
+    // Committed and locked
+    btn.textContent = '🔒 Committed';
+    btn.classList.add('committed');
+    btn.onclick = null; // disable
+
+    if (inWindow) {
+      editBtn.classList.remove('hidden');
+      const mins = Math.ceil(remaining / 60000);
+      timer.textContent = `Edit available for ${mins} more min`;
+      timer.classList.add('show');
+    } else {
+      editBtn.classList.add('hidden');
+      timer.classList.remove('show');
+    }
+    if (barText) barText.textContent = 'Committed for today. Well done.';
+  }
+}
+
+// Re-bind commit button after it may have been cleared
+function bindCommitBtn(type) {
+  const btn = document.getElementById(`commitbtn-${type}`);
+  if (btn && !commitData[today][type]) {
+    btn.onclick = () => commitSection(type);
+  }
+}
+
+// Refresh commit timers every minute
+setInterval(() => {
+  Object.keys(HABITS).forEach(type => {
+    if (commitData[today][type]) {
+      updateCommitUI(type);
+      bindCommitBtn(type);
+    }
+  });
+}, 60000);
+
+/* ═══════════════════════════════════════════════════════════
+   UPDATE CATEGORY UI
+   ═══════════════════════════════════════════════════════════ */
+function updateCatUI(type) {
+  const effPct = catEffectivePct(type);
+  const rawPct = catRawPct(type);
+  const fdnOk  = foundationDone(type);
+  const maxPts = catMaxPts(type);
+
+  document.getElementById(`gr-${type}`).style.width = rawPct + '%';
+  document.getElementById(`gf-${type}`).style.width = effPct + '%';
+  document.getElementById(`gm-${type}`).classList.toggle('show', !fdnOk);
+  document.getElementById(`gl-${type}`).textContent =
+    `${Math.round(effPct)}%${!fdnOk ? ' (capped)' : ''}`;
+  document.getElementById(`cb-${type}`).classList.toggle('show', !fdnOk);
+
+  const pipCount = Math.min(maxPts, 12);
+  const litCount = Math.round((effPct / 100) * pipCount);
+  const rawLit   = Math.round((rawPct / 100) * pipCount);
+  const pipEl    = document.getElementById(`pips-${type}`);
+  pipEl.innerHTML = Array.from({ length: pipCount }, (_, i) => {
+    let cls = i < litCount ? 'lit' : i < rawLit ? 'dim' : '';
+    return `<div class="pip-seg ${cls}"></div>`;
+  }).join('');
+
+  document.getElementById(`mn-${type}`).classList.toggle('show', effPct >= 100);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HEADER UPDATE
+   ═══════════════════════════════════════════════════════════ */
+function updateHeader() {
+  const score = heroScore();
+  const pct   = score / 100;
+  const circ  = 87.96;
+  document.getElementById('ringFill').style.strokeDashoffset = circ - pct * circ;
+  document.getElementById('ringNum').textContent        = Math.round(score) + '%';
+  document.getElementById('headerScoreVal').textContent  = Math.round(score) + '%';
+
+  const grades = [[100,'S','#4a9e82'],[80,'A','#4a9e82'],[60,'B','#5a82c0'],[40,'C','#c8712a'],[20,'D','#b85070'],[0,'—','#7a7469']];
+  const [, g, c] = grades.find(([min]) => score >= min) || grades[5];
+  const chip = document.getElementById('gradeChip');
+  chip.textContent = g;
+  chip.style.color = c;
+  chip.style.borderColor = g === '—' ? 'var(--border2)' : `color-mix(in srgb, ${c} 35%, transparent)`;
+  chip.style.background  = g === '—' ? 'var(--surface2)' : `color-mix(in srgb, ${c} 10%, var(--surface2))`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   COACH RENDER
+   ═══════════════════════════════════════════════════════════ */
+const COACH_TEXT = {
+  dopamine:  { capped:['🔒','Dopamine capped at 50%','Complete "Deep Work / Main Goal" (⭐⭐⭐) to unlock the full gauge.'], 0:['⚡','Dopamine inactive','Start with 45+ minutes of deep, focused work on your main goal.'], low:['⚡','Dopamine rising','Good start. Reward yourself after your next focus session.'], high:['⚡','Dopamine near max','Almost there — one more habit to lock in peak motivation.'], max:['✅','Dopamine maxed!','Full reward pathway activated. Your drive system is firing today.'] },
+  serotonin: { capped:['🔒','Serotonin capped at 50%','Complete any one foundational habit (Prayer, Sleep, or 5-a-Day) to unlock the gauge.'], 0:['🌸','Serotonin needs activation','Prioritise daily prayer and adequate sleep — the two biggest mood levers.'], low:['🌸','Serotonin stabilising','Good. Add a nature walk or breathwork to amplify mood regulation.'], high:['🌸','Serotonin near balance','One more habit to achieve full mood stability today.'], max:['✅','Serotonin maxed!','Mood fully regulated. Your emotional resilience is at its peak.'] },
+  oxytocin:  { capped:['🔒','Oxytocin capped at 50%','Complete "Active Socialising" (⭐⭐⭐) to unlock the full gauge.'], 0:['🤝','Oxytocin needs connection','Find someone for a real, focused conversation — 20 minutes minimum.'], low:['🤝','Oxytocin building','Connection initiated. A hug or sincere appreciation deepens the bond.'], high:['🤝','Oxytocin near peak','Strong connection day. One more act of kindness to top it off.'], max:['✅','Oxytocin maxed!','Full bonding system active. The people around you feel it.'] },
+  endorphin: { capped:['🔒','Endorphin capped at 50%','Complete "Exercise / High Movement" (⭐⭐⭐) to unlock the full gauge.'], 0:['🏃','Endorphin inactive','Your body is waiting to move. 30+ minutes of exercise unlocks everything.'], low:['🏃','Endorphin activating','Movement started. Add cold exposure or dancing to amplify the release.'], high:['🏃','Endorphin near peak','Almost at full physical recovery. One more habit closes the loop.'], max:['✅','Endorphin maxed!','Stress cleared, body activated. Natural pain relief fully online.'] }
+};
+
+function renderCoach() {
+  const score = heroScore();
+  document.getElementById('coachBigScore').innerHTML = `${Math.round(score)}<span>%</span>`;
+
+  const titles = [[100,'Perfect Day','All four neurochemicals fully activated.'],[80,'Excellent','Strong across the board. Keep it up.'],[60,'Good','Solid progress. Push those foundational habits.'],[40,'Okay','Foundation gaps remain. Focus on ⭐⭐⭐ habits first.'],[20,'Low','Pick one category and start there.'],[0,'Not started','Complete habits to activate your neurochemistry.']];
+  const [, t, s] = titles.find(([min]) => score >= min) || titles[5];
+  document.getElementById('coachScoreTitle').textContent = t;
+  document.getElementById('coachScoreSub').textContent   = s;
+
+  document.getElementById('coachCatBars').innerHTML = Object.keys(HABITS).map(type => {
+    const pct  = catEffectivePct(type);
+    const name = { dopamine:'Dopamine', serotonin:'Serotonin', oxytocin:'Oxytocin', endorphin:'Endorphin' }[type];
+    return `<div class="coach-cat-bar-item"><div class="coach-cat-bar-label"><span>${name}</span><span style="color:var(--${type})">${Math.round(pct)}%</span></div><div class="coach-cat-bar-track"><div class="coach-cat-bar-fill" style="width:${pct}%;background:var(--${type})"></div></div></div>`;
+  }).join('');
+
+  const items = [];
+  if (score >= 100) {
+    items.push({ icon:'🏆', title:'Perfect Day — 100%!', body:'Every neurochemical system fired today. This is peak performance.', good: true });
+  } else {
+    items.push({ icon:'📊', title:`${Math.round(score)}% Hero Score`, body:`${100 - Math.round(score)}% to perfect day. Complete foundational habits first.`, good: score >= 65 });
+  }
+  Object.keys(HABITS).forEach(type => {
+    const eff   = catEffectivePct(type);
+    const raw   = catRawPct(type);
+    const fdnOk = foundationDone(type);
+    const tier  = !fdnOk && raw > 0 ? 'capped' : eff >= 100 ? 'max' : eff >= 60 ? 'high' : eff > 0 ? 'low' : '0';
+    const [icon, title, body] = COACH_TEXT[type][tier];
+    items.push({ icon, title, body, good: tier === 'max', type });
+  });
+
+  document.getElementById('insightCards').innerHTML = items.map(ins => `
+    <div class="insight-card ${ins.good ? 'good' : ''}" style="--ins-color:${ins.type ? `var(--${ins.type})` : 'var(--muted)'}">
+      <div class="insight-icon">${ins.icon}</div>
+      <div class="insight-text"><strong>${ins.title}</strong><span>${ins.body}</span></div>
+    </div>`).join('');
+
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const name = userData.name ? `, ${userData.name.split(' ')[0]}` : '';
+  document.getElementById('coachGreeting').textContent = `${greeting}${name} 🧠`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   REVISION 6: SHARE SCORE + BRAIN BALANCE
+   ═══════════════════════════════════════════════════════════ */
+
+/**
+ * Brain Balance Feedback
+ * Analyses which categories are lowest and returns a 1–2 sentence
+ * human-readable feedback string.
+ */
+function getBrainBalanceFeedback() {
+  const scores = {};
+  Object.keys(HABITS).forEach(t => { scores[t] = catEffectivePct(t); });
+
+  const sorted = Object.entries(scores).sort(([,a],[,b]) => a - b);
+  const lowest = sorted[0];
+  const highest = sorted[sorted.length - 1];
+  const avg = heroScore();
+  const catNames = { dopamine:'Dopamine', serotonin:'Serotonin', oxytocin:'Oxytocin', endorphin:'Endorphin' };
+
+  if (avg >= 90) return 'Full neurochemical balance achieved today. Every system is firing — this is what a peak day looks like.';
+  if (avg === 0) return 'No habits tracked yet today. Every great day starts with a single habit — pick one now.';
+
+  const lowName  = catNames[lowest[0]];
+  const lowPct   = Math.round(lowest[1]);
+  const highName = catNames[highest[0]];
+
+  const lowMessages = {
+    dopamine:  `Low Dopamine day — motivation and drive may feel muted. Prioritise one meaningful task to reactivate your reward system.`,
+    serotonin: `Low Serotonin day — mood regulation may feel harder than usual. Prioritise sleep, prayer, and natural light to restore balance.`,
+    oxytocin:  `Low Oxytocin day — connection and trust feel underactivated. Reach out to someone who matters to you today.`,
+    endorphin: `Low Endorphin day — physical stress relief is missing. Even a 15-minute walk can shift your body's chemistry meaningfully.`
+  };
+
+  if (lowPct <= 30) {
+    return lowMessages[lowest[0]] + (highName !== lowName ? ` Your ${highName} is strong — let that momentum carry over.` : '');
+  }
+
+  if (avg >= 60) return `Solid balance overall — ${lowName} is your weakest area today at ${lowPct}%. One focused habit there could push your score significantly higher.`;
+
+  return `${lowName} and overall balance need attention today. Focus on foundational habits — they unlock the full scoring potential for each category.`;
+}
+
+function openShareModal() {
+  const score  = heroScore();
+  const now    = new Date();
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const grades = [[100,'S','#4a9e82'],[80,'A','#4a9e82'],[60,'B','#5a82c0'],[40,'C','#c8712a'],[20,'D','#b85070'],[0,'—','#7a7469']];
+  const [, g, c] = grades.find(([min]) => score >= min) || grades[5];
+
+  document.getElementById('shareDate').textContent    = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  document.getElementById('shareScoreNum').textContent = Math.round(score);
+  document.getElementById('shareScoreNum').style.color = c;
+  document.getElementById('shareGrade').textContent    = `Grade ${g} · ${gradeLabel(g)}`;
+  document.getElementById('shareGrade').style.color    = c;
+
+  // Brain balance bars
+  const barColors = { dopamine: '#c8712a', serotonin: '#4a9e82', oxytocin: '#b85070', endorphin: '#5a82c0' };
+  const barNames  = { dopamine: 'Dopamine', serotonin: 'Serotonin', oxytocin: 'Oxytocin', endorphin: 'Endorphin' };
+  document.getElementById('brainBars').innerHTML = Object.keys(HABITS).map(type => {
+    const pct = catEffectivePct(type);
+    return `
+      <div class="balance-row">
+        <div class="balance-name">${barNames[type]}</div>
+        <div class="balance-track"><div class="balance-fill" style="width:${pct}%;background:${barColors[type]}"></div></div>
+        <div class="balance-pct" style="color:${barColors[type]}">${Math.round(pct)}%</div>
+      </div>`;
+  }).join('');
+
+  // Brain balance feedback sentence (REVISION 6)
+  document.getElementById('brainFeedback').textContent = getBrainBalanceFeedback();
+
+  // Category score tiles
+  document.getElementById('shareCats').innerHTML = Object.keys(HABITS).map(type => {
+    const pct = catEffectivePct(type);
+    return `<div class="share-cat"><div class="share-cat-name">${barNames[type]}</div><div class="share-cat-score" style="color:${barColors[type]}">${Math.round(pct)}%</div></div>`;
+  }).join('');
+
+  openModal('shareOverlay');
+}
+
+function gradeLabel(g) {
+  const map = { 'S': 'Perfect Day', 'A': 'Excellent', 'B': 'Good', 'C': 'Okay', 'D': 'Low', '—': 'Just Starting' };
+  return map[g] || '';
+}
+
+function buildShareText() {
+  const score = Math.round(heroScore());
+  const grades = [[100,'S'],[80,'A'],[60,'B'],[40,'C'],[20,'D'],[0,'—']];
+  const [, g] = grades.find(([min]) => score >= min) || grades[5];
+  const now   = new Date();
+  const days  = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const catNames = { dopamine:'Dopamine', serotonin:'Serotonin', oxytocin:'Oxytocin', endorphin:'Endorphin' };
+  const lines = Object.keys(HABITS).map(t => `  ${catNames[t]}: ${Math.round(catEffectivePct(t))}%`).join('\n');
+
+  return `🧠 NeuroHabit — ${days[now.getDay()]}\n\nHero Score: ${score}%  |  Grade: ${g}\n\n${lines}\n\n${getBrainBalanceFeedback()}\n\nTracked with NeuroHabit by The Aufthority`;
+}
+
+function copyShareText() {
+  navigator.clipboard.writeText(buildShareText())
+    .then(() => alert('Score copied to clipboard!'))
+    .catch(() => alert(buildShareText()));
+}
+
+function nativeShare() {
+  const text = buildShareText();
+  if (navigator.share) {
+    navigator.share({ title: 'My NeuroHabit Score', text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text)
+      .then(() => alert('Score copied to clipboard!'))
+      .catch(() => alert(text));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   GENERATE SHARE IMAGE — Canvas-drawn score card
+   Draws a 1080×1080 px image and triggers download / share
+   ═══════════════════════════════════════════════════════════ */
+async function generateShareImage() {
+  const score  = Math.round(heroScore());
+  const now    = new Date();
+  const days   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+
+  const grades  = [[100,'S','#4a9e82'],[80,'A','#4a9e82'],[60,'B','#5a82c0'],[40,'C','#c8712a'],[20,'D','#b85070'],[0,'—','#7a7469']];
+  const [, grade, gradeColor] = grades.find(([min]) => score >= min) || grades[5];
+  const gradeText = { 'S':'Perfect Day','A':'Excellent','B':'Good','C':'Okay','D':'Low','—':'Just Starting' }[grade];
+
+  const catData = [
+    { name:'Dopamine',  pct: Math.round(catEffectivePct('dopamine')),  color:'#c8712a' },
+    { name:'Serotonin', pct: Math.round(catEffectivePct('serotonin')), color:'#4a9e82' },
+    { name:'Oxytocin',  pct: Math.round(catEffectivePct('oxytocin')),  color:'#b85070' },
+    { name:'Endorphin', pct: Math.round(catEffectivePct('endorphin')), color:'#5a82c0' },
+  ];
+
+  const W = 1080, H = 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+
+  // ── Background ──────────────────────────────────────────
+  ctx.fillStyle = '#1c1a17';
+  ctx.fillRect(0, 0, W, H);
+
+  // Subtle radial glow
+  const grd = ctx.createRadialGradient(W/2, H/3, 80, W/2, H/3, 600);
+  grd.addColorStop(0, 'rgba(124,106,184,0.12)');
+  grd.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── Top accent bar ──────────────────────────────────────
+  const barGrd = ctx.createLinearGradient(0, 0, W, 0);
+  barGrd.addColorStop(0,    '#c8712a');
+  barGrd.addColorStop(0.33, '#b85070');
+  barGrd.addColorStop(0.66, '#4a9e82');
+  barGrd.addColorStop(1,    '#5a82c0');
+  ctx.fillStyle = barGrd;
+  ctx.fillRect(0, 0, W, 8);
+
+  // ── Brand ───────────────────────────────────────────────
+  ctx.fillStyle = '#e8e3d8';
+  ctx.font = '500 36px "Geist", system-ui, sans-serif';
+  ctx.fillText('NeuroHabit', 72, 96);
+
+  ctx.fillStyle = '#7a7469';
+  ctx.font = '400 18px "Geist", system-ui, sans-serif';
+  ctx.fillText('BY THE AUFTHORITY', 72, 124);
+
+  ctx.fillStyle = '#7a7469';
+  ctx.font = '400 22px "Geist", system-ui, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(dateStr, W - 72, 96);
+  ctx.textAlign = 'left';
+
+  // ── Hero score ──────────────────────────────────────────
+  ctx.fillStyle = gradeColor;
+  ctx.font = '300 260px "Geist", system-ui, sans-serif';
+  ctx.fillText(`${score}`, 72, 410);
+
+  ctx.fillStyle = '#7a7469';
+  ctx.font = '400 72px "Geist", system-ui, sans-serif';
+  ctx.fillText('%', 72 + ctx.measureText(`${score}`).width + 8, 380);
+
+  ctx.fillStyle = gradeColor;
+  ctx.font = '600 32px "Geist", system-ui, sans-serif';
+  ctx.fillText(`Grade ${grade}  ·  ${gradeText}`, 72, 456);
+
+  // ── Divider ─────────────────────────────────────────────
+  ctx.strokeStyle = '#3d3a33';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(72, 494);
+  ctx.lineTo(W - 72, 494);
+  ctx.stroke();
+
+  // ── Brain Balance label ──────────────────────────────────
+  ctx.fillStyle = '#7a7469';
+  ctx.font = '500 22px "Geist", system-ui, sans-serif';
+  ctx.letterSpacing = '3px';
+  ctx.fillText('BRAIN BALANCE', 72, 544);
+  ctx.letterSpacing = '0px';
+
+  // ── Category bars ────────────────────────────────────────
+  const barY0 = 570, barH = 12, barGap = 52, trackW = W - 144;
+  catData.forEach((cat, i) => {
+    const y = barY0 + i * barGap;
+    // Name
+    ctx.fillStyle = '#7a7469';
+    ctx.font = '400 22px "Geist", system-ui, sans-serif';
+    ctx.fillText(cat.name, 72, y);
+    // Pct
+    ctx.fillStyle = cat.color;
+    ctx.font = '600 22px "Geist", system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${cat.pct}%`, W - 72, y);
+    ctx.textAlign = 'left';
+    // Track
+    roundRect(ctx, 72, y + 10, trackW, barH, 6);
+    ctx.fillStyle = '#2e2b24';
+    ctx.fill();
+    // Fill
+    const fillW = (cat.pct / 100) * trackW;
+    if (fillW > 0) {
+      roundRect(ctx, 72, y + 10, fillW, barH, 6);
+      ctx.fillStyle = cat.color;
+      ctx.fill();
+    }
+  });
+
+  // ── Feedback text ────────────────────────────────────────
+  const feedback = getBrainBalanceFeedback();
+  ctx.fillStyle = '#e8e3d8';
+  ctx.font = 'italic 26px "Geist", system-ui, sans-serif';
+  wrapText(ctx, feedback, 72, 856, trackW, 38);
+
+  // ── Footer ───────────────────────────────────────────────
+  ctx.fillStyle = '#504c45';
+  ctx.font = '400 22px "Geist", system-ui, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('neurohabit.app  ·  by The Aufthority', W / 2, H - 52);
+  ctx.textAlign = 'left';
+
+  // ── Export ───────────────────────────────────────────────
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'neurohabit-score.png', { type: 'image/png' });
+    // Try native share with image (mobile)
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'My NeuroHabit Score', text: buildShareText() });
+        return;
+      } catch (e) { /* fall through to download */ }
+    }
+    // Desktop fallback: download the image
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'neurohabit-score.png';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }, 'image/png');
+}
+
+// Helper: rounded rect path
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// Helper: word-wrap text
+function wrapText(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  for (const word of words) {
+    const test = line ? line + ' ' + word : word;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y);
+      y += lineH; line = word;
+    } else { line = test; }
+  }
+  if (line) ctx.fillText(line, x, y);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WEEK DOTS
+   ═══════════════════════════════════════════════════════════ */
+function renderWeek() {
+  const grid   = document.getElementById('weekGrid');
+  const now    = new Date();
+  const dow    = now.getDay();
+  const monOff = dow === 0 ? -6 : 1 - dow;
+  const labels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const score  = Math.round(heroScore());
+  weekData[today] = score; sv(WK, weekData);
+
+  grid.innerHTML = Array.from({ length: 7 }, (_, i) => {
+    const d   = new Date(now); d.setDate(now.getDate() + monOff + i);
+    const key = d.toISOString().slice(0, 10);
+    const isFuture = key > today, isToday = key === today;
+    const s   = isToday ? score : (weekData[key] ?? 0);
+    let cls   = isFuture ? 'future' : s >= 100 ? 'perfect' : s >= 50 ? 'filled' : '';
+    if (isToday) cls += ' today';
+    return `<div class="week-cell"><div class="week-cell-day">${labels[i]}</div><div class="week-dot ${cls}">${isFuture ? '' : s > 0 ? s + '%' : ''}</div></div>`;
+  }).join('');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   STREAK
+   ═══════════════════════════════════════════════════════════ */
+function checkStreak() {
+  const score = Math.round(heroScore());
+  weekData[today] = score; sv(WK, weekData);
+  if (score >= 50 && streak.lastDate !== today) {
+    const y = new Date(); y.setDate(y.getDate() - 1);
+    const yKey = y.toISOString().slice(0, 10);
+    streak.count = (streak.lastDate === yKey) ? streak.count + 1 : 1;
+    streak.lastDate = today; sv(STK, streak);
+  }
+  document.getElementById('streakNum').textContent = streak.count || 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MODALS
+   ═══════════════════════════════════════════════════════════ */
+function openModal(id)  { document.getElementById(id).classList.add('show'); }
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+function showTooltip(tip) {
+  if (!tip) return;
+  document.getElementById('tooltipIcon').textContent = tip.icon;
+  document.getElementById('tooltipTitle').textContent = tip.title;
+  document.getElementById('tooltipBody').textContent  = tip.body;
+  openModal('tooltipOverlay');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CELEBRATE
+   ═══════════════════════════════════════════════════════════ */
+function maybeCelebrate() {
+  const score = heroScore();
+  if (score >= 100) burst(80);
+  else if (score >= 50 && Math.round(score) % 25 === 0) burst(25);
+}
+function burst(n) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:9999';
+  document.body.appendChild(wrap);
+  const colors = ['#c8712a','#b85070','#4a9e82','#5a82c0','#7c6ab8','#e8e3d8'];
+  if (!document.getElementById('cpAnim')) {
+    const s = document.createElement('style'); s.id = 'cpAnim';
+    s.textContent = '@keyframes cpfall{0%{opacity:1;transform:translateY(-10px) rotate(0)}100%{opacity:0;transform:translateY(500px) rotate(480deg)}}';
+    document.head.appendChild(s);
+  }
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    const sz = 5 + Math.random() * 7;
+    p.style.cssText = ['position:absolute',`left:${Math.random()*100}vw`,'top:-10px',`width:${sz}px`,`height:${sz}px`,`background:${colors[Math.floor(Math.random()*colors.length)]}`,`animation:cpfall ${1.4+Math.random()*.9}s ${Math.random()*.8}s forwards`,`border-radius:${Math.random()>.5?'50%':'3px'}`,'opacity:0'].join(';');
+    wrap.appendChild(p);
+  }
+  setTimeout(() => wrap.remove(), 3000);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HAPTIC
+   ═══════════════════════════════════════════════════════════ */
+function haptic(style = 'light') {
+  if ('vibrate' in navigator) { const p = {light:[10],medium:[20],heavy:[10,50,10]}; navigator.vibrate(p[style] || [10]); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCREEN MANAGEMENT
+   ═══════════════════════════════════════════════════════════ */
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => { s.style.display = 'flex'; s.classList.remove('screen-active','screen-left'); s.classList.add('screen-left'); });
+  const t = document.getElementById(id); t.style.display = 'flex'; t.classList.remove('screen-left'); t.classList.add('screen-active');
+}
+function hideScreen(id) {
+  const s = document.getElementById(id); s.classList.remove('screen-active'); s.classList.add('screen-left');
+  setTimeout(() => { s.style.display = 'none'; }, 300);
+  const app = document.getElementById('screen-app'); app.style.display = 'flex'; app.classList.remove('screen-left'); app.classList.add('screen-active');
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════════════ */
+document.querySelectorAll('.nav-tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
+    // If the grade screen is open, close it first and return to app
+    const gradeScreen = document.getElementById('screen-grade');
+    if (gradeScreen.classList.contains('screen-active')) {
+      hideScreen('screen-grade');
+    }
+    document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('page-active'));
+    btn.classList.add('active');
+    document.getElementById(`page-${tab}`).classList.add('page-active');
+    document.getElementById(`page-${tab}`).scrollTop = 0;
+  });
+});
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH (Firebase stubs)
+   ═══════════════════════════════════════════════════════════ */
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  if (!email) { alert('Please enter your email.'); return; }
+  // TODO: firebase.auth().signInWithEmailAndPassword(email, pass).then(...)
+  userData.name = email.split('@')[0]; userData.skipAuth = false; sv(UK, userData); launchApp();
+}
+function handleSignup() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass  = document.getElementById('loginPassword').value;
+  if (!email || !pass) { alert('Enter email and password.'); return; }
+  // TODO: firebase.auth().createUserWithEmailAndPassword(email, pass).then(...)
+  userData.name = email.split('@')[0]; userData.skipAuth = false; sv(UK, userData); launchApp();
+}
+function skipLogin() { userData.skipAuth = true; sv(UK, userData); launchApp(); }
+
+/* ═══════════════════════════════════════════════════════════
+   LAUNCH & INIT
+   ═══════════════════════════════════════════════════════════ */
+function launchApp() {
+  document.getElementById('screen-login').classList.remove('screen-active');
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-app').style.display = 'flex';
+  document.getElementById('screen-app').classList.add('screen-active');
+  document.getElementById('appHeader').style.display = 'flex';
+  document.getElementById('bottomNav').style.display = 'flex';
+  initApp();
+}
+
+function initApp() {
+  const now = new Date();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('headerDate').textContent = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]}`;
+  Object.keys(HABITS).forEach(t => { renderSection(t); updateCommitUI(t); });
+  updateHeader(); renderCoach(); renderWeek(); checkStreak();
+}
+
+function confirmNewDay() {
+  if (!confirm('Start a fresh day? Clears all of today\'s completions and commits.')) return;
+  appState[today] = {}; weekData[today] = 0; commitData[today] = {};
+  sv(SK, appState); sv(WK, weekData); sv(CK, commitData);
+  Object.keys(HABITS).forEach(t => { renderSection(t); updateCommitUI(t); });
+  updateHeader(); renderCoach(); renderWeek();
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PWA INSTALL
+   ═══════════════════════════════════════════════════════════ */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
+  setTimeout(() => document.getElementById('installBanner').classList.add('show'), 3500);
+});
+function triggerInstall() { if (!deferredPrompt) return; deferredPrompt.prompt(); deferredPrompt.userChoice.then(() => { dismissInstall(); deferredPrompt = null; }); }
+function dismissInstall() { document.getElementById('installBanner').classList.remove('show'); }
+window.addEventListener('appinstalled', dismissInstall);
+
+/* ═══════════════════════════════════════════════════════════
+   SERVICE WORKER
+   ═══════════════════════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').then(r => console.log('[SW]', r.scope)).catch(e => console.warn('[SW]', e)));
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INIT — auto-login returning users
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  if (userData.skipAuth || userData.name) launchApp();
+});
+</script>
+</body>
+</html>
